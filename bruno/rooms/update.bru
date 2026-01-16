@@ -1,0 +1,60 @@
+meta {
+  name: Atualizar Sala
+  type: "http"
+}
+
+patch {
+  url: {{baseUrl}}/rooms/1
+  body: json
+  auth: bearer
+}
+
+body:json {
+  {
+    "name": "Sala Principal",
+    "startTime": "09:30",
+    "endTime": "18:30",
+    "slotDurationMinutes": 45
+  }
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Atualizar Sala
+  Atualiza dados de uma sala existente, incluindo horários e duração do slot. Apenas administradores.
+
+  ## Exemplo de requisição
+  ```json
+  {
+    "name": "Sala Principal",
+    "startTime": "09:30",
+    "endTime": "18:30",
+    "slotDurationMinutes": 45
+  }
+  ```
+
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "id": 1,
+    "name": "Sala Principal",
+    "startTime": "09:30:00",
+    "endTime": "18:30:00",
+    "slotDurationMinutes": 45,
+    "createdAt": "2026-01-14T12:00:00Z",
+    "updatedAt": "2026-01-14T12:20:00Z",
+    "deletedAt": null
+  }
+  ```
+
+  ## Status codes
+  - 200 Sucesso
+  - 400 Erro de validação
+  - 401 Token inválido ou ausente
+  - 403 Acesso negado
+  - 404 Sala não encontrada
+  - 500 Erro interno
+}

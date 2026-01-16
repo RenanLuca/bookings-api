@@ -1,0 +1,58 @@
+meta {
+  name: Meu Perfil de Cliente
+  type: "http"
+}
+
+get {
+  url: {{baseUrl}}/customers/me
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Meu Perfil de Cliente
+  Retorna dados do usuário autenticado e seu perfil de cliente. Apenas para role CUSTOMER.
+
+  ## Exemplo de requisição
+  ```
+  GET {{baseUrl}}/customers/me
+  Header: Authorization: Bearer {{token}}
+  ```
+
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "user": {
+      "id": 5,
+      "name": "Cliente Demo",
+      "email": "cliente.demo@example.com",
+      "role": "CUSTOMER",
+      "status": "ACTIVE"
+    },
+    "customer": {
+      "id": 3,
+      "userId": 5,
+      "zipCode": "01001-000",
+      "street": "Praça da Sé",
+      "number": "100",
+      "complement": "Sala 1",
+      "neighborhood": "Sé",
+      "city": "São Paulo",
+      "state": "SP",
+      "createdAt": "2026-01-14T12:00:00Z",
+      "updatedAt": "2026-01-14T12:00:00Z",
+      "deletedAt": null
+    }
+  }
+  ```
+
+  ## Status codes
+  - 200 Sucesso
+  - 401 Token inválido ou ausente
+  - 403 Acesso negado (role não é CUSTOMER)
+  - 404 Usuário não encontrado
+  - 500 Erro interno
+}

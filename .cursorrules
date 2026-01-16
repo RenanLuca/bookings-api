@@ -1,0 +1,91 @@
+
+Cursor Rules — Node.js (TypeScript) + Express + Sequelize + MySQL
+
+ARCHITECTURE
+- Avoid the use of elses
+- All code must be written in English
+- Controllers must be thin: no business logic in controllers
+- All business logic must be implemented in services
+- Controllers should only parse input, call services, and return HTTP responses
+- Use a repository/data-access layer for database access
+- Avoid N+1 problems using eager loading (include), pagination, and proper attribute selection
+
+SEQUELIZE / DATABASE
+- Use Sequelize (do not use TypeORM)
+- Avoid raw SQL queries whenever possible
+- Raw SQL is allowed only when Sequelize cannot handle the case
+- Raw queries must be isolated in repositories and parameterized
+- Ensure all modules are imported in the correct places
+
+NAMING CONVENTIONS
+- Database table names must be snake_case and plural
+- Database fields must be camelCase
+- Sequelize models must use PascalCase
+
+
+TIMESTAMPS / SOFT DELETE
+- All tables must include createdAt, updatedAt, and deletedAt
+- Enable soft delete using Sequelize paranoid mode when applicable
+
+MIGRATIONS
+- Always ensure migrations follow chronological order
+- Use Sequelize migration API (queryInterface) instead of raw SQL whenever possible
+- All migrations must implement both up and down methods
+
+TOOLING / SCRIPTS
+- Do not create scripts unless explicitly requested
+- Never run npm run dev unless explicitly requested
+- Use build command only to ensure nothing breaks
+
+Rules
+- Não faça comentários
+
+BRUNO DOCUMENTATION
+- Use Bruno to document the API
+- All documentation must live inside bruno/collection.bru under docs{}
+- Each request must include a docs{} section with:
+  - Written documentation
+  - Complete request and response examples
+  - All possible HTTP status codes
+- All main Bruno folders must contain a folder.bru with a docs{} section
+- All documentation variables must be validated in bruno/environments/
+- Toda a documentação do Bruno deve ficar dentro da pasta .bru de cada request, dentro da sessão docs{}
+- Não adicionar arquivos markdown dentro da pasta bruno/
+
+PROJECT STRUCTURE
+
+src/
+ ├─ app.ts
+ ├─ server.ts
+ ├─ config/
+ │  ├─ env.ts
+ │  └─ db.ts
+ ├─ modules/
+ │  ├─ users/
+ │  │  ├─ users.controller.ts
+ │  │  ├─ users.service.ts
+ │  │  ├─ users.repository.ts
+ │  │  ├─ users.routes.ts
+ │  │  ├─ users.model.ts
+ │  │  └─ users.dto.ts
+ │  └─ health/
+ │     └─ health.routes.ts
+ ├─ db/
+ │  ├─ migrations/
+ │  └─ seeders/
+ ├─ shared/
+ │  ├─ http/
+ │  │  ├─ error-handler.ts
+ │  │  └─ http-error.ts
+ │  ├─ middlewares/
+ │  │  └─ validate.ts
+ │  └─ utils/
+ │     └─ async-handler.ts
+ └─ types/
+    └─ express.d.ts
+
+bruno/
+ ├─ collection.bru
+ └─ environments/
+    ├─ local.bru
+    └─ staging.bru

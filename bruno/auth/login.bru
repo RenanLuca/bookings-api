@@ -1,0 +1,65 @@
+meta {
+  name: Login
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "email": "admin@bookings.com",
+    "password": "admin123"
+  }
+}
+
+tests {
+  test("should login successfully", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody()).to.have.property('user');
+    expect(res.getBody()).to.have.property('token');
+    bru.setVar("token", res.getBody().token);
+    bru.setVar("userId", res.getBody().user.id);
+  });
+}
+
+docs {
+  # Login
+  Autentica o usuário e retorna o token JWT para acessar endpoints protegidos.
+  
+  ## Exemplo de requisição
+  ```json
+  {
+    "email": "admin@example.com",
+    "password": "senha-secreta"
+  }
+  ```
+  
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "token": "eyJhbGciOi...",
+    "user": {
+      "id": 1,
+      "name": "Admin",
+      "email": "admin@example.com",
+      "role": "ADMIN"
+    }
+  }
+  ```
+  
+  ## Status codes
+  - 200 Sucesso
+  - 400 Erro de validação
+  - 401 Credenciais inválidas
+  - 403 Usuário inativo
+  - 500 Erro interno
+}

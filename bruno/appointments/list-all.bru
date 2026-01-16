@@ -1,0 +1,61 @@
+meta {
+  name: Listar Todos Agendamentos
+  type: "http"
+}
+
+get {
+  url: {{baseUrl}}/appointments?page=1&pageSize=10&sort=desc&from=&to=
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Listar Todos Agendamentos
+  Lista todos os agendamentos com filtros opcionais de intervalo de datas e ordenação. Requer perfil ADMIN.
+
+  ## Exemplo de requisição
+  ```
+  GET {{baseUrl}}/appointments?page=1&pageSize=10&sort=desc&from=2026-01-15&to=2026-01-31
+  Header: Authorization: Bearer {{token}}
+  ```
+
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "data": [
+      {
+        "id": 10,
+        "roomId": 1,
+        "customerId": 3,
+        "scheduledAt": "2026-01-15T10:00:00-03:00",
+        "status": "PENDING",
+        "room": {
+          "id": 1,
+          "name": "Sala Principal"
+        },
+        "customer": {
+          "id": 3,
+          "name": "Cliente Demo",
+          "email": "cliente.demo@example.com"
+        }
+      }
+    ],
+    "meta": {
+      "page": 1,
+      "pageSize": 10,
+      "total": 1,
+      "sort": "desc"
+    }
+  }
+  ```
+
+  ## Status codes
+  - 200 Sucesso
+  - 400 Erro de validação
+  - 401 Token inválido ou ausente
+  - 403 Acesso negado
+  - 500 Erro interno
+}

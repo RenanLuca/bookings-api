@@ -1,0 +1,46 @@
+meta {
+  name: Detalhar Sala
+  type: "http"
+}
+
+get {
+  url: {{baseUrl}}/rooms/1
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Detalhar Sala
+  Retorna detalhes de uma sala pelo identificador. Requer perfil ADMIN.
+
+  ## Exemplo de requisição
+  ```
+  GET {{baseUrl}}/rooms/1
+  Header: Authorization: Bearer {{token}}
+  ```
+
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "id": 1,
+    "name": "Sala Principal",
+    "startTime": "09:00:00",
+    "endTime": "18:00:00",
+    "slotDurationMinutes": 30,
+    "createdAt": "2026-01-14T12:00:00Z",
+    "updatedAt": "2026-01-14T12:00:00Z",
+    "deletedAt": null
+  }
+  ```
+
+  ## Status codes
+  - 200 Sucesso
+  - 400 Erro de validação
+  - 401 Token inválido ou ausente
+  - 403 Acesso negado
+  - 404 Sala não encontrada
+  - 500 Erro interno
+}

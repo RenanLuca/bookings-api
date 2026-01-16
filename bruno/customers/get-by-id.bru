@@ -1,0 +1,63 @@
+meta {
+  name: Buscar Cliente por ID
+  type: "http"
+}
+
+get {
+  url: {{baseUrl}}/customers/:id
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+vars:pre-request {
+  id: 1
+}
+
+docs {
+  # Buscar Cliente por ID
+  Retorna dados de um cliente específico pelo ID. Requer role ADMIN.
+
+  ## Exemplo de requisição
+  ```
+  GET {{baseUrl}}/customers/5
+  Header: Authorization: Bearer {{token}}
+  ```
+
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "user": {
+      "id": 5,
+      "name": "Cliente Demo",
+      "email": "cliente.demo@example.com",
+      "role": "CUSTOMER",
+      "status": "ACTIVE"
+    },
+    "customer": {
+      "id": 3,
+      "userId": 5,
+      "zipCode": "01001-000",
+      "street": "Praça da Sé",
+      "number": "100",
+      "complement": "Sala 1",
+      "neighborhood": "Sé",
+      "city": "São Paulo",
+      "state": "SP",
+      "createdAt": "2026-01-14T12:00:00Z",
+      "updatedAt": "2026-01-14T12:00:00Z",
+      "deletedAt": null
+    }
+  }
+  ```
+
+  ## Status codes
+  - 200 Sucesso
+  - 400 Erro de validação (ID inválido)
+  - 401 Token inválido ou ausente
+  - 403 Acesso negado (role não é ADMIN)
+  - 404 Cliente não encontrado
+  - 500 Erro interno
+}

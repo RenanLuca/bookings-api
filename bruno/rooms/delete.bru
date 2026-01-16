@@ -1,0 +1,37 @@
+meta {
+  name: Remover Sala
+  type: "http"
+}
+
+delete {
+  url: {{baseUrl}}/rooms/1
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Remover Sala
+  Remove uma sala (soft delete). Operação exclusiva para administradores.
+
+  ## Exemplo de requisição
+  ```
+  DELETE {{baseUrl}}/rooms/1
+  Header: Authorization: Bearer {{token}}
+  ```
+
+  ## Exemplo de resposta (204)
+  ```
+  Sem conteúdo
+  ```
+
+  ## Status codes
+  - 204 Sucesso
+  - 400 Erro de validação
+  - 401 Token inválido ou ausente
+  - 403 Acesso negado
+  - 404 Sala não encontrada
+  - 500 Erro interno
+}

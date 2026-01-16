@@ -1,0 +1,21 @@
+meta {
+  name: Customers
+  type: "folder"
+}
+
+docs {
+  # Customers
+  Endpoints para gerenciamento de clientes.
+  
+  ## Rotas públicas
+  - POST /customers - Registro de novo cliente
+  
+  ## Rotas autenticadas (CUSTOMER)
+  - GET /customers/me - Ver próprio perfil
+  - PATCH /customers/me - Atualizar próprio perfil
+  
+  ## Rotas autenticadas (ADMIN)
+  - GET /customers - Listar todos os clientes
+  - GET /customers/:id - Ver cliente por ID
+  - DELETE /customers/:id - Remover cliente
+}

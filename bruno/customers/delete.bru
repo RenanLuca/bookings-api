@@ -1,0 +1,39 @@
+meta {
+  name: Remover Cliente
+  type: "http"
+}
+
+delete {
+  url: {{baseUrl}}/customers/:id
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+vars:pre-request {
+  id: 1
+}
+
+docs {
+  # Remover Cliente
+  Remove um cliente (soft delete). Requer role ADMIN.
+
+  ## Exemplo de requisição
+  ```
+  DELETE {{baseUrl}}/customers/5
+  Header: Authorization: Bearer {{token}}
+  ```
+
+  ## Exemplo de resposta (204)
+  Sem conteúdo no corpo da resposta.
+
+  ## Status codes
+  - 204 Removido com sucesso
+  - 400 Erro de validação (ID inválido)
+  - 401 Token inválido ou ausente
+  - 403 Acesso negado (role não é ADMIN)
+  - 404 Cliente não encontrado
+  - 500 Erro interno
+}

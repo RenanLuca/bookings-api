@@ -1,0 +1,85 @@
+meta {
+  name: Registrar Cliente
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/customers
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Novo Cliente",
+    "email": "novo.cliente@example.com",
+    "password": "senha123",
+    "customer": {
+      "zipCode": "01001-000",
+      "street": "Praça da Sé",
+      "number": "100",
+      "complement": null,
+      "neighborhood": "Sé",
+      "city": "São Paulo",
+      "state": "SP"
+    }
+  }
+}
+
+docs {
+  # Registrar Cliente
+  Cria um novo cliente. Endpoint público, não requer autenticação.
+  O campo customer é opcional e pode ser preenchido posteriormente.
+
+  ## Exemplo de requisição
+  ```json
+  {
+    "name": "Novo Cliente",
+    "email": "novo.cliente@example.com",
+    "password": "senha123",
+    "customer": {
+      "zipCode": "01001-000",
+      "street": "Praça da Sé",
+      "number": "100",
+      "complement": null,
+      "neighborhood": "Sé",
+      "city": "São Paulo",
+      "state": "SP"
+    }
+  }
+  ```
+
+  ## Exemplo de resposta (201)
+  ```json
+  {
+    "user": {
+      "id": 5,
+      "name": "Novo Cliente",
+      "email": "novo.cliente@example.com",
+      "role": "CUSTOMER",
+      "status": "ACTIVE"
+    },
+    "customer": {
+      "id": 3,
+      "userId": 5,
+      "zipCode": "01001-000",
+      "street": "Praça da Sé",
+      "number": "100",
+      "complement": null,
+      "neighborhood": "Sé",
+      "city": "São Paulo",
+      "state": "SP",
+      "createdAt": "2026-01-14T12:00:00Z",
+      "updatedAt": "2026-01-14T12:00:00Z",
+      "deletedAt": null
+    }
+  }
+  ```
+
+  ## Status codes
+  - 201 Criado
+  - 400 Erro de validação (name, email ou password inválidos)
+  - 409 E-mail já existe
+  - 500 Erro interno
+}

@@ -1,0 +1,94 @@
+meta {
+  name: Atualizar Perfil de Cliente
+  type: "http"
+}
+
+patch {
+  url: {{baseUrl}}/customers/me
+  body: json
+  auth: bearer
+}
+
+body:json {
+  {
+    "user": {
+      "name": "Cliente Atualizado",
+      "email": "cliente.atualizado@example.com",
+      "password": "nova-senha"
+    },
+    "customer": {
+      "zipCode": "01001-000",
+      "street": "Praça da Sé",
+      "number": "101",
+      "complement": "Sala 2",
+      "neighborhood": "Sé",
+      "city": "São Paulo",
+      "state": "SP"
+    }
+  }
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Atualizar Perfil de Cliente
+  Atualiza dados do usuário autenticado e seu endereço de cliente. Apenas para role CUSTOMER.
+
+  ## Exemplo de requisição
+  ```json
+  {
+    "user": {
+      "name": "Cliente Atualizado",
+      "email": "cliente.atualizado@example.com",
+      "password": "nova-senha"
+    },
+    "customer": {
+      "zipCode": "01001-000",
+      "street": "Praça da Sé",
+      "number": "101",
+      "complement": "Sala 2",
+      "neighborhood": "Sé",
+      "city": "São Paulo",
+      "state": "SP"
+    }
+  }
+  ```
+
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "user": {
+      "id": 5,
+      "name": "Cliente Atualizado",
+      "email": "cliente.atualizado@example.com",
+      "role": "CUSTOMER",
+      "status": "ACTIVE"
+    },
+    "customer": {
+      "id": 3,
+      "userId": 5,
+      "zipCode": "01001-000",
+      "street": "Praça da Sé",
+      "number": "101",
+      "complement": "Sala 2",
+      "neighborhood": "Sé",
+      "city": "São Paulo",
+      "state": "SP",
+      "createdAt": "2026-01-14T12:00:00Z",
+      "updatedAt": "2026-01-14T12:15:00Z",
+      "deletedAt": null
+    }
+  }
+  ```
+
+  ## Status codes
+  - 200 Sucesso
+  - 400 Erro de validação
+  - 401 Token inválido ou ausente
+  - 403 Acesso negado (role não é CUSTOMER)
+  - 404 Usuário não encontrado
+  - 409 E-mail já existe
+  - 500 Erro interno
+}

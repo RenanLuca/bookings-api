@@ -1,0 +1,63 @@
+meta {
+  name: Criar Agendamento
+  type: "http"
+}
+
+post {
+  url: {{baseUrl}}/appointments
+  body: json
+  auth: bearer
+}
+
+body:json {
+  {
+    "roomId": 1,
+    "scheduledAt": "2026-01-15T10:00:00-03:00"
+  }
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Criar Agendamento
+  Cria um agendamento para uma sala em um horário disponível. Requer token de cliente.
+
+  ## Exemplo de requisição
+  ```json
+  {
+    "roomId": 1,
+    "scheduledAt": "2026-01-15T10:00:00-03:00"
+  }
+  ```
+
+  ## Exemplo de resposta (201)
+  ```json
+  {
+    "id": 10,
+    "roomId": 1,
+    "customerId": 3,
+    "scheduledAt": "2026-01-15T10:00:00-03:00",
+    "status": "PENDING",
+    "room": {
+      "id": 1,
+      "name": "Sala Principal"
+    },
+    "customer": {
+      "id": 3,
+      "name": "Cliente Demo",
+      "email": "cliente.demo@example.com"
+    }
+  }
+  ```
+
+  ## Status codes
+  - 201 Criado
+  - 400 Erro de validação
+  - 401 Token inválido ou ausente
+  - 403 Acesso negado
+  - 404 Sala ou cliente não encontrado
+  - 409 Conflito de horário
+  - 500 Erro interno
+}

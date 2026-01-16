@@ -1,0 +1,59 @@
+meta {
+  name: Criar Sala
+  type: "http"
+}
+
+post {
+  url: {{baseUrl}}/rooms
+  body: json
+  auth: bearer
+}
+
+body:json {
+  {
+    "name": "Sala Principal",
+    "startTime": "09:00",
+    "endTime": "18:00",
+    "slotDurationMinutes": 30
+  }
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Criar Sala
+  Cria uma sala com janelas de agendamento e duração dos slots. Disponível apenas para administradores.
+
+  ## Exemplo de requisição
+  ```json
+  {
+    "name": "Sala Principal",
+    "startTime": "09:00",
+    "endTime": "18:00",
+    "slotDurationMinutes": 30
+  }
+  ```
+
+  ## Exemplo de resposta (201)
+  ```json
+  {
+    "id": 1,
+    "name": "Sala Principal",
+    "startTime": "09:00:00",
+    "endTime": "18:00:00",
+    "slotDurationMinutes": 30,
+    "createdAt": "2026-01-14T12:00:00Z",
+    "updatedAt": "2026-01-14T12:00:00Z",
+    "deletedAt": null
+  }
+  ```
+
+  ## Status codes
+  - 201 Criado
+  - 400 Erro de validação
+  - 401 Token inválido ou ausente
+  - 403 Acesso negado
+  - 500 Erro interno
+}

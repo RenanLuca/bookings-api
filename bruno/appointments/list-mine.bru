@@ -1,0 +1,57 @@
+meta {
+  name: Listar Meus Agendamentos
+  type: "http"
+}
+
+get {
+  url: {{baseUrl}}/appointments/me?page=1&pageSize=10&sort=desc&from=&to=
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Listar Meus Agendamentos
+  Lista os agendamentos do cliente autenticado com filtros opcionais de data e ordenação. Requer token de cliente.
+
+  ## Exemplo de requisição
+  ```
+  GET {{baseUrl}}/appointments/me?page=1&pageSize=10&sort=desc&from=2026-01-15&to=2026-01-31
+  Header: Authorization: Bearer {{token}}
+  ```
+
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "data": [
+      {
+        "id": 10,
+        "roomId": 1,
+        "customerId": 3,
+        "scheduledAt": "2026-01-15T10:00:00-03:00",
+        "status": "PENDING",
+        "room": {
+          "id": 1,
+          "name": "Sala Principal"
+        }
+      }
+    ],
+    "meta": {
+      "page": 1,
+      "pageSize": 10,
+      "total": 1,
+      "sort": "desc"
+    }
+  }
+  ```
+
+  ## Status codes
+  - 200 Sucesso
+  - 400 Erro de validação
+  - 401 Token inválido ou ausente
+  - 403 Acesso negado
+  - 404 Cliente não encontrado
+  - 500 Erro interno
+}

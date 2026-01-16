@@ -1,0 +1,52 @@
+meta {
+  name: Cancelar Agendamento
+  type: "http"
+}
+
+patch {
+  url: {{baseUrl}}/appointments/10/cancel
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Cancelar Agendamento
+  Cancela um agendamento com status PENDING ou SCHEDULED. Disponível para administradores.
+
+  ## Exemplo de requisição
+  ```
+  PATCH {{baseUrl}}/appointments/10/cancel
+  Header: Authorization: Bearer {{token}}
+  ```
+
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "id": 10,
+    "roomId": 1,
+    "customerId": 3,
+    "scheduledAt": "2026-01-15T10:00:00-03:00",
+    "status": "CANCELED",
+    "room": {
+      "id": 1,
+      "name": "Sala Principal"
+    },
+    "customer": {
+      "id": 3,
+      "name": "Cliente Demo",
+      "email": "cliente.demo@example.com"
+    }
+  }
+  ```
+
+  ## Status codes
+  - 200 Sucesso
+  - 400 Status inválido ou erro de validação
+  - 401 Token inválido ou ausente
+  - 403 Acesso negado
+  - 404 Agendamento não encontrado
+  - 500 Erro interno
+}

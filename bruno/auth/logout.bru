@@ -1,0 +1,34 @@
+meta {
+  name: Logout
+  type: "http"
+}
+
+post {
+  url: {{baseUrl}}/auth/logout
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Logout
+  Revoga o token ativo do usuário autenticado. Exige token válido no header Authorization.
+
+  ## Exemplo de requisição
+  ```
+  POST {{baseUrl}}/auth/logout
+  Header: Authorization: Bearer {{token}}
+  ```
+
+  ## Exemplo de resposta (204)
+  ```
+  Sem conteúdo
+  ```
+
+  ## Status codes
+  - 204 Sucesso
+  - 401 Token inválido ou ausente
+  - 500 Erro interno
+}

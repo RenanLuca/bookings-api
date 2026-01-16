@@ -1,0 +1,52 @@
+meta {
+  name: Aceitar Agendamento
+  type: "http"
+}
+
+patch {
+  url: {{baseUrl}}/appointments/10/accept
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Aceitar Agendamento
+  Altera o status de um agendamento PENDING para SCHEDULED. Apenas administradores.
+
+  ## Exemplo de requisição
+  ```
+  PATCH {{baseUrl}}/appointments/10/accept
+  Header: Authorization: Bearer {{token}}
+  ```
+
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "id": 10,
+    "roomId": 1,
+    "customerId": 3,
+    "scheduledAt": "2026-01-15T10:00:00-03:00",
+    "status": "SCHEDULED",
+    "room": {
+      "id": 1,
+      "name": "Sala Principal"
+    },
+    "customer": {
+      "id": 3,
+      "name": "Cliente Demo",
+      "email": "cliente.demo@example.com"
+    }
+  }
+  ```
+
+  ## Status codes
+  - 200 Sucesso
+  - 400 Status inválido ou erro de validação
+  - 401 Token inválido ou ausente
+  - 403 Acesso negado
+  - 404 Agendamento não encontrado
+  - 500 Erro interno
+}

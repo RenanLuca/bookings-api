@@ -1,0 +1,35 @@
+meta {
+  name: Health Check
+  type: "http"
+}
+
+get {
+  url: {{baseUrl}}/health
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Health Check
+  Retorna o status da API e testa a conexão com o banco de dados.
+
+  ## Exemplo de requisição
+  ```
+  GET {{baseUrl}}/health
+  ```
+
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "ok": true,
+    "db": "connected"
+  }
+  ```
+
+  ## Status codes
+  - 200 Sucesso
+  - 500 Erro interno
+}

@@ -1,0 +1,68 @@
+meta {
+  name: Listar Clientes
+  type: "http"
+}
+
+get {
+  url: {{baseUrl}}/customers?page=1&pageSize=10&sort=desc&name=
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Listar Clientes
+  Lista clientes com paginação opcional, ordenação por criação e filtro por nome. Requer role ADMIN.
+
+  ## Exemplo de requisição
+  ```
+  GET {{baseUrl}}/customers?page=1&pageSize=10&sort=desc&name=joao
+  Header: Authorization: Bearer {{token}}
+  ```
+
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "data": [
+      {
+        "user": {
+          "id": 5,
+          "name": "Cliente Demo",
+          "email": "cliente.demo@example.com",
+          "role": "CUSTOMER",
+          "status": "ACTIVE"
+        },
+        "customer": {
+          "id": 3,
+          "userId": 5,
+          "zipCode": "01001-000",
+          "street": "Praça da Sé",
+          "number": "100",
+          "complement": "Sala 1",
+          "neighborhood": "Sé",
+          "city": "São Paulo",
+          "state": "SP",
+          "createdAt": "2026-01-14T12:00:00Z",
+          "updatedAt": "2026-01-14T12:00:00Z",
+          "deletedAt": null
+        }
+      }
+    ],
+    "meta": {
+      "page": 1,
+      "pageSize": 10,
+      "total": 1,
+      "sort": "desc"
+    }
+  }
+  ```
+
+  ## Status codes
+  - 200 Sucesso
+  - 400 Erro de validação
+  - 401 Token inválido ou ausente
+  - 403 Acesso negado (role não é ADMIN)
+  - 500 Erro interno
+}

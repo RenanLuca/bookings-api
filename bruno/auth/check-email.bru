@@ -1,0 +1,57 @@
+meta {
+  name: Check Email
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/check-email
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "email": "admin@bookings.com"
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  test("should include exists flag", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("exists");
+    expect(data).to.have.property("canLogin");
+  });
+}
+
+docs {
+  # Check Email
+  Verifica se um e-mail já está cadastrado e se o usuário pode fazer login.
+  
+  ## Exemplo de requisição
+  ```json
+  {
+    "email": "cliente@example.com"
+  }
+  ```
+  
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "exists": true,
+    "canLogin": true
+  }
+  ```
+  
+  ## Status codes
+  - 200 Sucesso
+  - 400 Erro de validação
+  - 500 Erro interno
+}

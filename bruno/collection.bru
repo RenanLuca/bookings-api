@@ -1,0 +1,41 @@
+meta {
+  name: Bookings API
+  type: "collection"
+}
+
+docs {
+  # Bookings API
+  Coleção para testar a API de agendamentos. Configure o environment `local` com `baseUrl` e defina `token` após realizar login. Endpoints protegidos exigem Authorization com `Bearer {{token}}`.
+
+  ## Exemplo de requisição
+  ```json
+  {
+    "email": "admin@example.com",
+    "password": "senha-secreta"
+  }
+  ```
+
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "token": "eyJhbGciOi...",
+    "user": {
+      "id": 1,
+      "name": "Admin",
+      "email": "admin@example.com",
+      "role": "ADMIN"
+    }
+  }
+  ```
+
+  ## Status codes
+  - 200 Sucesso
+  - 201 Criado
+  - 204 Sem conteúdo
+  - 400 Erro de validação
+  - 401 Não autorizado
+  - 403 Acesso negado
+  - 404 Não encontrado
+  - 409 Conflito
+  - 500 Erro interno
+}
