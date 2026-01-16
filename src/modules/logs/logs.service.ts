@@ -1,4 +1,4 @@
-import type { CreateLogInput, ListLogsInput, ListLogsResult, LogResponse, ListAllLogsInput } from "./logs.dto.js";
+import type { CreateLogInput, ListLogsInput, ListLogsResult, LogResponse, ListAllLogsInput } from "./dto/index.js";
 import type { ILogsRepository } from "./logs.repository.interface.js";
 
 class LogsService {

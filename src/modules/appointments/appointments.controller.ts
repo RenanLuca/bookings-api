@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
-import { AuthTokenInvalidError } from "../auth/auth.errors.js";
+import { AuthTokenInvalidError } from "../auth/errors/index.js";
 import { AppointmentsFactory } from "./appointments.factory.js";
-import type { CreateAppointmentInput } from "./appointments.dto.js";
+import type { CreateAppointmentInput } from "./dto/index.js";
 
 const service = AppointmentsFactory.createService();
 

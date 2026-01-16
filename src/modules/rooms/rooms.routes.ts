@@ -7,7 +7,7 @@ import {
   listRoomsValidator,
   roomIdValidator,
   updateRoomValidator
-} from "./rooms.validators.js";
+} from "./validators/index.js";
 import { validate } from "../../shared/validators/validate.js";
 import { RoomsController } from "./rooms.controller.js";
 

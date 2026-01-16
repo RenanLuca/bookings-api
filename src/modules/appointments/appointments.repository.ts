@@ -10,7 +10,7 @@ import type {
   CreateAppointmentParams,
   ListParams,
   SortDirection
-} from "./appointments.types.js";
+} from "./dto/index.js";
 import type { IAppointmentsRepository } from "./appointments.repository.interface.js";
 
 class AppointmentsRepository implements IAppointmentsRepository {

@@ -5,7 +5,7 @@ import { activityTypes } from "../../shared/constants/log-messages.js";
 import {
   UserNotFoundError,
   UserEmailAlreadyExistsError
-} from "./customers.errors.js";
+} from "./errors/index.js";
 import type { ILogsService } from "../logs/logs.service.interface.js";
 import type { IPermissionsService } from "../permissions/permissions.service.interface.js";
 import type { ICustomersRepository } from "./customers.repository.interface.js";
@@ -15,15 +15,13 @@ import type {
   ProfileResult,
   ProfileUser,
   RegisterInput,
-  UpdateProfileInput
-} from "./customers.dto.js";
-import type {
+  UpdateProfileInput,
   CustomerData,
   CustomerUpdateData,
   FindPaginatedParams,
   UserData,
   UserWithCustomer
-} from "./customers.types.js";
+} from "./dto/index.js";
 
 class CustomersService {
   constructor(

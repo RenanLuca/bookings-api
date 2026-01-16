@@ -8,7 +8,7 @@ import type {
   FindPaginatedParams,
   UserData,
   UserWithCustomer
-} from "./customers.types.js";
+} from "./dto/index.js";
 import type { ICustomersRepository } from "./customers.repository.interface.js";
 
 class CustomersRepository implements ICustomersRepository {

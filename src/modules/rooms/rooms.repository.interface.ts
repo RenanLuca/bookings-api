@@ -3,7 +3,7 @@ import type {
   CreateRoomParams,
   FindPaginatedParams,
   UpdateRoomParams
-} from "./rooms.types.js";
+} from "./dto/index.js";
 
 interface IRoomsRepository {
   findPaginated(params: FindPaginatedParams): Promise<{ rows: Room[]; count: number }>;

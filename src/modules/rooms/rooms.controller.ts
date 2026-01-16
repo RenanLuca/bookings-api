@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
-import { AuthTokenInvalidError } from "../auth/auth.errors.js";
+import { AuthTokenInvalidError } from "../auth/errors/index.js";
 import { RoomsFactory } from "./rooms.factory.js";
-import type { CreateRoomInput, UpdateRoomInput } from "./rooms.dto.js";
+import type { CreateRoomInput, UpdateRoomInput } from "./dto/index.js";
 
 const service = RoomsFactory.createService();
 

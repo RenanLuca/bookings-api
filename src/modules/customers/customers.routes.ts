@@ -8,7 +8,7 @@ import {
   registerCustomerValidator,
   updateMeValidator,
   updatePermissionsValidator
-} from "./customers.validators.js";
+} from "./validators/index.js";
 import { validate } from "../../shared/validators/validate.js";
 import { CustomersController } from "./customers.controller.js";
 

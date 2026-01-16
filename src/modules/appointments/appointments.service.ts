@@ -1,11 +1,11 @@
-import { CustomerNotFoundError } from "../customers/customers.errors.js";
-import { RoomNotFoundError } from "../rooms/rooms.errors.js";
+import { CustomerNotFoundError } from "../customers/errors/index.js";
+import { RoomNotFoundError } from "../rooms/errors/index.js";
 import {
   AppointmentConflictError,
   AppointmentNotFoundError,
   AppointmentInvalidStatusError,
   AppointmentForbiddenError
-} from "./appointments.errors.js";
+} from "./errors/index.js";
 import type { UserRole } from "../../models/user.model.js";
 import { activityTypes } from "../../shared/constants/log-messages.js";
 import { toAppIsoStringFromUtc, toUtcFromAppTz } from "../../shared/utils/datetime.js";
@@ -17,9 +17,10 @@ import type {
   AppointmentResponse,
   CreateAppointmentInput,
   ListAppointmentsResult,
-  ListFiltersInput
-} from "./appointments.dto.js";
-import type { AppointmentWithRelations, QueryFilters } from "./appointments.types.js";
+  ListFiltersInput,
+  AppointmentWithRelations,
+  QueryFilters
+} from "./dto/index.js";
 
 class AppointmentsService {
   constructor(

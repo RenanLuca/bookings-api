@@ -7,11 +7,11 @@ import {
   AuthInvalidCredentialsError,
   AuthTokenInvalidError,
   AuthUserInactiveError
-} from "./auth.errors.js";
+} from "./errors/index.js";
 import { activityTypes, logMessages } from "../../shared/constants/log-messages.js";
 import type { ILogsService } from "../logs/logs.service.interface.js";
 import type { IAuthRepository } from "./auth.repository.interface.js";
-import type { CheckEmailResult, LoginResult } from "./auth.dto.js";
+import type { CheckEmailResult, LoginResult } from "./dto/index.js";
 
 class AuthService  {
   constructor(

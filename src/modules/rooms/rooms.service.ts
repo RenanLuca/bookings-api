@@ -1,18 +1,16 @@
 import { ValidationError } from "../../shared/errors/index.js";
-import { RoomNotFoundError } from "./rooms.errors.js";
+import { RoomNotFoundError } from "./errors/index.js";
 import type { ILogsService } from "../logs/logs.service.interface.js";
 import type { IRoomsRepository } from "./rooms.repository.interface.js";
 import type {
   CreateRoomInput,
   ListRoomsMeta,
   ListRoomsResult,
-  UpdateRoomInput
-} from "./rooms.dto.js";
-import type {
+  UpdateRoomInput,
   FindPaginatedParams,
   NormalizedTime,
   UpdateRoomParams
-} from "./rooms.types.js";
+} from "./dto/index.js";
 
 class RoomsService {
   constructor(

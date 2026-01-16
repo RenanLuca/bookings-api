@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { env } from "../../config/env.js";
 import type { UserRole } from "../../models/user.model.js";
-import { AuthTokenInvalidError } from "../../modules/auth/auth.errors.js";
+import { AuthTokenInvalidError } from "../../modules/auth/errors/index.js";
 import { AuthRepository } from "../../modules/auth/auth.repository.js";
 
 const repository = new AuthRepository();

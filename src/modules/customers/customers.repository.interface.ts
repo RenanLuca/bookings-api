@@ -8,7 +8,7 @@ import type {
   FindPaginatedParams,
   UserData,
   UserWithCustomer
-} from "./customers.types.js";
+} from "./dto/index.js";
 
 interface ICustomersRepository {
   findProfile(userId: number, transaction?: Transaction): Promise<UserWithCustomer | null>;

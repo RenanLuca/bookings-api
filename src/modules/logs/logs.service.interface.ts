@@ -1,5 +1,5 @@
 import type { ActivityLog } from "../../models/activity-log.model.js";
-import type { CreateLogInput, ListLogsInput, ListLogsResult, ListAllLogsInput } from "./logs.dto.js";
+import type { CreateLogInput, ListLogsInput, ListLogsResult, ListAllLogsInput } from "./dto/index.js";
 
 interface ILogsService {
   createLog(data: CreateLogInput): Promise<ActivityLog>;

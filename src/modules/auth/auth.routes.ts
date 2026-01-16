@@ -4,7 +4,7 @@ import { authMiddleware } from "../../shared/http/auth.middleware.js";
 import {
   checkEmailValidator,
   loginValidator
-} from "./auth.validators.js";
+} from "./validators/index.js";
 import { validate } from "../../shared/validators/validate.js";
 import { AuthController } from "./auth.controller.js";
 

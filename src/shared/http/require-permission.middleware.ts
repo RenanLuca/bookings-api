@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import type { PermissionModule } from "../permissions/modules.js";
-import { AuthTokenInvalidError } from "../../modules/auth/auth.errors.js";
-import { CustomerNotFoundError } from "../../modules/customers/customers.errors.js";
-import { ModuleAccessForbiddenError } from "../../modules/permissions/permissions.errors.js";
+import { AuthTokenInvalidError } from "../../modules/auth/errors/index.js";
+import { CustomerNotFoundError } from "../../modules/customers/errors/index.js";
+import { ModuleAccessForbiddenError } from "../../modules/permissions/errors/index.js";
 import { RepositoryFactory } from "../factories/repository.factory.js";
 
 const customersRepository = RepositoryFactory.getCustomersRepository();

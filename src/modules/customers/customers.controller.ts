@@ -1,9 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
-import { AuthTokenInvalidError } from "../auth/auth.errors.js";
+import { AuthTokenInvalidError } from "../auth/errors/index.js";
 import { CustomersFactory } from "./customers.factory.js";
 import { PermissionsFactory } from "../permissions/permissions.factory.js";
-import type { RegisterInput, UpdateProfileInput } from "./customers.dto.js";
-import type { CustomerData } from "./customers.types.js";
+import type { RegisterInput, UpdateProfileInput, CustomerData } from "./dto/index.js";
 import type { ModulePermissionUpdate } from "../permissions/permissions.service.interface.js";
 
 const service = CustomersFactory.createService();

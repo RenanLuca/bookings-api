@@ -1,5 +1,5 @@
 import type { ActivityLog, ActivityLogModule } from "../../models/activity-log.model.js";
-import type { CreateLogInput } from "./logs.dto.js";
+import type { CreateLogInput } from "./dto/index.js";
 
 type ListByUserIdParams = {
   userId: number;

@@ -4,7 +4,7 @@ import type {
   CreateRoomParams,
   FindPaginatedParams,
   UpdateRoomParams
-} from "./rooms.types.js";
+} from "./dto/index.js";
 import type { IRoomsRepository } from "./rooms.repository.interface.js";
 
 class RoomsRepository implements IRoomsRepository {

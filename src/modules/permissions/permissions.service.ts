@@ -1,6 +1,6 @@
 import { sequelize } from "../../config/db.js";
 import { PERMISSION_MODULES, type PermissionModule } from "../../shared/permissions/modules.js";
-import { ModuleAccessForbiddenError } from "./permissions.errors.js";
+import { ModuleAccessForbiddenError } from "./errors/index.js";
 import type { ILogsService } from "../logs/logs.service.interface.js";
 import type { IPermissionsRepository } from "./permissions.repository.interface.js";
 import type {

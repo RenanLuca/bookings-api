@@ -6,7 +6,7 @@ import {
   appointmentIdValidator,
   createAppointmentValidator,
   listAppointmentsValidator
-} from "./appointments.validators.js";
+} from "./validators/index.js";
 import { validate } from "../../shared/validators/validate.js";
 import { AppointmentsController } from "./appointments.controller.js";
 

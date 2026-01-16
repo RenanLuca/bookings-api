@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { AuthTokenInvalidError } from "./auth.errors.js";
+import { AuthTokenInvalidError } from "./errors/index.js";
 import { AuthFactory } from "./auth.factory.js";
 
 const service = AuthFactory.createService();

@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
-import { AuthTokenInvalidError } from "../auth/auth.errors.js";
+import { AuthTokenInvalidError } from "../auth/errors/index.js";
 import { LogsFactory } from "./logs.factory.js";
-import type { ListLogsInput, ListAllLogsInput } from "./logs.dto.js";
+import type { ListLogsInput, ListAllLogsInput } from "./dto/index.js";
 import type { ActivityLogModule } from "../../models/activity-log.model.js";
 
 const service = LogsFactory.createService();

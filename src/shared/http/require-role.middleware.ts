@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { AuthTokenInvalidError } from "../../modules/auth/auth.errors.js";
+import { AuthTokenInvalidError } from "../../modules/auth/errors/index.js";
 import { ForbiddenError } from "../errors/index.js";
 
 type AllowedRole = "ADMIN" | "CUSTOMER";
