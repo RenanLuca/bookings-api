@@ -6,6 +6,7 @@ import {
   UserNotFoundError,
   UserEmailAlreadyExistsError
 } from "./errors/index.js";
+import type { ActivityLogModule } from "../../models/activity-log.model.js";
 import type { ILogsService } from "../logs/logs.service.interface.js";
 import type { IPermissionsService } from "../permissions/permissions.service.interface.js";
 import type { ICustomersRepository } from "./customers.repository.interface.js";
@@ -29,6 +30,15 @@ class CustomersService {
     private readonly activityLogs: ILogsService,
     private readonly permissionsService: IPermissionsService
   ) {}
+
+  private async logActivity(userId: number, activityType: string, description: string, module: ActivityLogModule = "ACCOUNT") {
+    await this.activityLogs.createLog({
+      userId,
+      module,
+      activityType,
+      description
+    });
+  }
 
   private buildDefaultCustomerData(): CustomerData {
     return {
@@ -54,6 +64,66 @@ class CustomersService {
     return { user, customer };
   }
 
+  private async buildUserUpdates(
+    profile: UserWithCustomer,
+    input: UpdateProfileInput
+  ): Promise<{ updates: UserData; emailChanged: boolean; oldEmail: string; newEmail: string }> {
+    const updates: UserData = {};
+    let emailChanged = false;
+    let oldEmail = "";
+    let newEmail = "";
+
+    if (input.user?.name && input.user.name !== profile.name) {
+      updates.name = input.user.name;
+    }
+    if (input.user?.email && input.user.email !== profile.email) {
+      updates.email = input.user.email;
+      emailChanged = true;
+      oldEmail = profile.email;
+      newEmail = input.user.email;
+    }
+    if (input.user?.password) {
+      updates.passwordHash = await bcrypt.hash(input.user.password, 10);
+    }
+
+    return { updates, emailChanged, oldEmail, newEmail };
+  }
+
+  private copyIfPresent<T extends Record<string, unknown>>(
+    source: T,
+    target: Partial<T>,
+    fields: (keyof T)[]
+  ): void {
+    for (const field of fields) {
+      if (field in source) {
+        target[field] = source[field];
+      }
+    }
+  }
+
+  private buildCustomerUpdates(input: UpdateProfileInput): CustomerUpdateData {
+    const updates: CustomerUpdateData = {};
+    const payload = input.customer ?? {};
+    const customerFields: (keyof CustomerUpdateData)[] = [
+      "zipCode",
+      "street",
+      "number",
+      "complement",
+      "neighborhood",
+      "city",
+      "state"
+    ];
+
+    this.copyIfPresent(payload, updates, customerFields);
+
+    return updates;
+  }
+
+  private async logEmailChange(userId: number, oldEmail: string, newEmail: string): Promise<void> {
+    const logDescription = `Alterou email de '${oldEmail}' para '${newEmail}'`;
+    await this.logActivity(userId, activityTypes.PROFILE_UPDATE, logDescription);
+  }
+
   async getProfile(userId: number) {
     let profile = await this.repository.findProfile(userId);
     if (!profile) {
@@ -75,81 +145,36 @@ class CustomersService {
     let emailChanged = false;
     let oldEmail = "";
     let newEmail = "";
+
     try {
       let profile = await this.repository.findProfile(userId, transaction);
       if (!profile) {
         throw new UserNotFoundError();
       }
+
       let customer = profile.Customer;
       if (!customer) {
         const defaults = this.buildDefaultCustomerData();
         customer = await this.repository.createCustomer(userId, defaults, transaction);
       }
-      const userUpdates: UserData = {};
-      const customerUpdates: CustomerUpdateData = {};
-      if (input.user?.name && input.user.name !== profile.name) {
-        userUpdates.name = input.user.name;
-      }
-      if (input.user?.email && input.user.email !== profile.email) {
-        userUpdates.email = input.user.email;
-        emailChanged = true;
-        oldEmail = profile.email;
-        newEmail = input.user.email;
-      }
-      if (input.user?.password) {
-        userUpdates.passwordHash = await bcrypt.hash(input.user.password, 10);
-      }
-      const customerPayload = input.customer ?? {};
-      if (
-        customerPayload.zipCode !== undefined &&
-        customerPayload.zipCode !== customer.zipCode
-      ) {
-        customerUpdates.zipCode = customerPayload.zipCode;
-      }
-      if (
-        customerPayload.street !== undefined &&
-        customerPayload.street !== customer.street
-      ) {
-        customerUpdates.street = customerPayload.street;
-      }
-      if (
-        customerPayload.number !== undefined &&
-        customerPayload.number !== customer.number
-      ) {
-        customerUpdates.number = customerPayload.number;
-      }
-      if (
-        customerPayload.complement !== undefined &&
-        customerPayload.complement !== customer.complement
-      ) {
-        customerUpdates.complement = customerPayload.complement;
-      }
-      if (
-        customerPayload.neighborhood !== undefined &&
-        customerPayload.neighborhood !== customer.neighborhood
-      ) {
-        customerUpdates.neighborhood = customerPayload.neighborhood;
-      }
-      if (
-        customerPayload.city !== undefined &&
-        customerPayload.city !== customer.city
-      ) {
-        customerUpdates.city = customerPayload.city;
-      }
-      if (
-        customerPayload.state !== undefined &&
-        customerPayload.state !== customer.state
-      ) {
-        customerUpdates.state = customerPayload.state;
-      }
-      const hasUserUpdates = Object.keys(userUpdates).length > 0;
+
+      const userResult = await this.buildUserUpdates(profile, input);
+      emailChanged = userResult.emailChanged;
+      oldEmail = userResult.oldEmail;
+      newEmail = userResult.newEmail;
+
+      const customerUpdates = this.buildCustomerUpdates(input);
+
+      const hasUserUpdates = Object.keys(userResult.updates).length > 0;
       const hasCustomerUpdates = Object.keys(customerUpdates).length > 0;
+
       if (hasUserUpdates) {
-        await this.repository.updateUser(userId, userUpdates, transaction);
+        await this.repository.updateUser(userId, userResult.updates, transaction);
       }
       if (hasCustomerUpdates) {
         await this.repository.updateCustomer(userId, customerUpdates, transaction);
       }
+
       await transaction.commit();
     } catch (error) {
       await transaction.rollback();
@@ -158,19 +183,16 @@ class CustomersService {
       }
       throw error;
     }
+
     const updatedProfile = await this.repository.findProfile(userId);
     if (!updatedProfile) {
       throw new UserNotFoundError();
     }
+
     if (emailChanged) {
-      const logDescription = `Alterou email de '${oldEmail}' para '${newEmail}'`;
-      await this.activityLogs.createLog({
-        userId,
-        module: "ACCOUNT",
-        activityType: activityTypes.PROFILE_UPDATE,
-        description: logDescription
-      });
+      await this.logEmailChange(userId, oldEmail, newEmail);
     }
+
     return this.mapProfile(updatedProfile);
   }
 

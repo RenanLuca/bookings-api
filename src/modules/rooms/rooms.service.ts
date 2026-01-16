@@ -18,6 +18,15 @@ class RoomsService {
     private readonly activityLogs: ILogsService
   ) {}
 
+  private async logActivity(userId: number, activityType: string, description: string) {
+    await this.activityLogs.createLog({
+      userId,
+      module: "APPOINTMENT",
+      activityType,
+      description
+    });
+  }
+
   private parseTime(value: string): NormalizedTime {
     const trimmed = value.trim();
     const segments = trimmed.split(":");
@@ -98,13 +107,60 @@ class RoomsService {
     const logDescription = `Criou sala '${room.name}' (${this.formatTime(
       room.startTime
     )}-${this.formatTime(room.endTime)}, slot ${room.slotDurationMinutes}m)`;
-    await this.activityLogs.createLog({
-      userId: actorId,
-      module: "APPOINTMENT",
-      activityType: "Criação de sala",
-      description: logDescription
-    });
+    await this.logActivity(actorId, "Criação de sala", logDescription);
     return room;
+  }
+
+  private buildRoomUpdates(
+    current: { name: string; startTime: string; endTime: string; slotDurationMinutes: number },
+    input: UpdateRoomInput
+  ): { updates: UpdateRoomParams; changes: string[]; finalStart: NormalizedTime; finalEnd: NormalizedTime } {
+    const updates: UpdateRoomParams = {};
+    const changes: string[] = [];
+
+    if (input.name !== undefined) {
+      const name = input.name.trim();
+      if (name !== current.name) {
+        updates.name = name;
+        changes.push(`Nome de '${current.name}' para '${name}'`);
+      }
+    }
+
+    const currentStart = this.parseTime(current.startTime);
+    const currentEnd = this.parseTime(current.endTime);
+    let finalStart = currentStart;
+    let finalEnd = currentEnd;
+
+    if (input.startTime !== undefined) {
+      const startTime = this.parseTime(input.startTime);
+      finalStart = startTime;
+      if (startTime.normalized !== current.startTime) {
+        updates.startTime = startTime.normalized;
+        changes.push(
+          `Horário inicial de ${this.formatTime(current.startTime)} para ${this.formatTime(startTime.normalized)}`
+        );
+      }
+    }
+
+    if (input.endTime !== undefined) {
+      const endTime = this.parseTime(input.endTime);
+      finalEnd = endTime;
+      if (endTime.normalized !== current.endTime) {
+        updates.endTime = endTime.normalized;
+        changes.push(
+          `Horário final de ${this.formatTime(current.endTime)} para ${this.formatTime(endTime.normalized)}`
+        );
+      }
+    }
+
+    if (input.slotDurationMinutes !== undefined && input.slotDurationMinutes !== current.slotDurationMinutes) {
+      updates.slotDurationMinutes = input.slotDurationMinutes;
+      changes.push(
+        `slotDurationMinutes de ${current.slotDurationMinutes} para ${input.slotDurationMinutes}`
+      );
+    }
+
+    return { updates, changes, finalStart, finalEnd };
   }
 
   async updateRoom(id: number, input: UpdateRoomInput, actorId: number) {
@@ -112,77 +168,29 @@ class RoomsService {
     if (!current) {
       throw new RoomNotFoundError();
     }
-    const updates: UpdateRoomParams = {};
-    const changes: string[] = [];
-    if (input.name !== undefined) {
-      const name = input.name.trim();
-      const hasChanged = name !== current.name;
-      if (hasChanged) {
-        updates.name = name;
-        changes.push(`Nome de '${current.name}' para '${name}'`);
-      }
-    }
-    const currentStart = this.parseTime(current.startTime);
-    const currentEnd = this.parseTime(current.endTime);
-    let finalStart = currentStart;
-    let finalEnd = currentEnd;
-    if (input.startTime !== undefined) {
-      const startTime = this.parseTime(input.startTime);
-      finalStart = startTime;
-      const hasChanged = startTime.normalized !== current.startTime;
-      if (hasChanged) {
-        updates.startTime = startTime.normalized;
-        changes.push(
-          `Horário inicial de ${this.formatTime(
-            current.startTime
-          )} para ${this.formatTime(startTime.normalized)}`
-        );
-      }
-    }
-    if (input.endTime !== undefined) {
-      const endTime = this.parseTime(input.endTime);
-      finalEnd = endTime;
-      const hasChanged = endTime.normalized !== current.endTime;
-      if (hasChanged) {
-        updates.endTime = endTime.normalized;
-        changes.push(
-          `Horário final de ${this.formatTime(
-            current.endTime
-          )} para ${this.formatTime(endTime.normalized)}`
-        );
-      }
-    }
-    const shouldValidateRange =
-      input.startTime !== undefined || input.endTime !== undefined;
+
+    const { updates, changes, finalStart, finalEnd } = this.buildRoomUpdates(current, input);
+
+    const shouldValidateRange = input.startTime !== undefined || input.endTime !== undefined;
     if (shouldValidateRange) {
       this.validateTimeRange(finalStart, finalEnd);
     }
-    if (input.slotDurationMinutes !== undefined) {
-      const hasChanged = input.slotDurationMinutes !== current.slotDurationMinutes;
-      if (hasChanged) {
-        updates.slotDurationMinutes = input.slotDurationMinutes;
-        changes.push(
-          `slotDurationMinutes de ${current.slotDurationMinutes} para ${input.slotDurationMinutes}`
-        );
-      }
-    }
+
     const hasUpdates = Object.keys(updates).length > 0;
     if (!hasUpdates) {
       return current;
     }
+
     const updated = await this.repository.updateById(id, updates);
     if (!updated) {
       throw new RoomNotFoundError();
     }
+
     if (changes.length > 0) {
       const logDescription = `Atualizou sala '${updated.name}': ${changes.join("; ")}`;
-      await this.activityLogs.createLog({
-        userId: actorId,
-        module: "APPOINTMENT",
-        activityType: "Atualização de sala",
-        description: logDescription
-      });
+      await this.logActivity(actorId, "Atualização de sala", logDescription);
     }
+
     return updated;
   }
 
@@ -196,12 +204,7 @@ class RoomsService {
       throw new RoomNotFoundError();
     }
     const logDescription = `Removeu sala '${room.name}'`;
-    await this.activityLogs.createLog({
-      userId: actorId,
-      module: "APPOINTMENT",
-      activityType: "Remoção de sala",
-      description: logDescription
-    });
+    await this.logActivity(actorId, "Remoção de sala", logDescription);
   }
 }
 

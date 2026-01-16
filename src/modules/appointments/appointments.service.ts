@@ -27,7 +27,16 @@ class AppointmentsService {
     private readonly repository: IAppointmentsRepository,
     private readonly activityLogs: ILogsService,
     private readonly permissionsService: IPermissionsService
-  ) {}
+  ) { }
+
+  private async logActivity(userId: number, activityType: string, description: string) {
+    await this.activityLogs.createLog({
+      userId,
+      module: "APPOINTMENT",
+      activityType,
+      description
+    });
+  }
 
   private toDate(value: string): Date {
     return toUtcFromAppTz(value.trim());
@@ -40,28 +49,27 @@ class AppointmentsService {
     return toUtcFromAppTz(value.trim());
   }
 
-  private mapAppointment(record: any): AppointmentResponse {
-    const appointment = record as AppointmentWithRelations;
+  private toAppointmentResponse(record: AppointmentWithRelations): AppointmentResponse {
     const scheduledAt = toAppIsoStringFromUtc(record.scheduledAt);
     const room =
-      appointment.Room && appointment.Room.id
-        ? { id: appointment.Room.id, name: appointment.Room.name }
+      record.Room && record.Room.id
+        ? { id: record.Room.id, name: record.Room.name }
         : undefined;
     let customer: AppointmentCustomer | undefined;
-    if (appointment.Customer && appointment.Customer.id) {
-      customer = { id: appointment.Customer.id };
-      if (appointment.Customer.User?.name !== undefined) {
-        customer.name = appointment.Customer.User.name;
+    if (record.Customer && record.Customer.id) {
+      customer = { id: record.Customer.id };
+      if (record.Customer.User?.name !== undefined) {
+        customer.name = record.Customer.User.name;
       }
-      if (appointment.Customer.User?.email !== undefined) {
-        customer.email = appointment.Customer.User.email;
+      if (record.Customer.User?.email !== undefined) {
+        customer.email = record.Customer.User.email;
       }
     }
     const response: AppointmentResponse = {
-      id: appointment.id,
-      roomId: appointment.roomId,
-      customerId: appointment.customerId,
-      status: appointment.status,
+      id: record.id,
+      roomId: record.roomId,
+      customerId: record.customerId,
+      status: record.status,
       scheduledAt
     };
     if (room) {
@@ -82,7 +90,7 @@ class AppointmentsService {
     };
   }
 
-  private buildLogDescription(prefix: string, record: any) {
+  private buildLogDescription(prefix: string, record: AppointmentWithRelations) {
     const dateTime = toAppIsoStringFromUtc(record.scheduledAt);
     const roomName = record.Room?.name ?? `Sala ${record.roomId}`;
     const customerName = record.Customer?.User?.name;
@@ -90,6 +98,20 @@ class AppointmentsService {
       return `${prefix} para ${customerName} na ${roomName} em ${dateTime}`;
     }
     return `${prefix} na ${roomName} em ${dateTime}`;
+  }
+
+  private buildQueryFilters(input: ListFiltersInput, customerId?: number): QueryFilters {
+    const from = this.toDateOrUndefined(input.from);
+    const to = this.toDateOrUndefined(input.to);
+
+    return {
+      page: input.page,
+      pageSize: input.pageSize,
+      sort: input.sort,
+      ...(from !== undefined ? { from } : {}),
+      ...(to !== undefined ? { to } : {}),
+      ...(customerId !== undefined ? { customerId } : {})
+    };
   }
 
   async createAppointment(userId: number, input: CreateAppointmentInput) {
@@ -121,13 +143,8 @@ class AppointmentsService {
       "Criação de agendamento",
       record
     );
-    await this.activityLogs.createLog({
-      userId,
-      module: "APPOINTMENT",
-      activityType: activityTypes.APPOINTMENT_CREATE,
-      description: logDescription
-    });
-    return this.mapAppointment(record);
+    await this.logActivity(userId, activityTypes.APPOINTMENT_CREATE, logDescription);
+    return this.toAppointmentResponse(record);
   }
 
   async listMyAppointments(userId: number, input: ListFiltersInput): Promise<ListAppointmentsResult> {
@@ -136,34 +153,24 @@ class AppointmentsService {
       throw new CustomerNotFoundError();
     }
     await this.permissionsService.assertCanViewModule(customer.id, "APPOINTMENTS");
-    const from = this.toDateOrUndefined(input.from);
-    const to = this.toDateOrUndefined(input.to);
-    const params: QueryFilters = {
-      page: input.page,
-      pageSize: input.pageSize,
-      sort: input.sort,
-      customerId: customer.id,
-      ...(from !== undefined ? { from } : {}),
-      ...(to !== undefined ? { to } : {})
-    };
+
+    const params = this.buildQueryFilters(input, customer.id);
     const { rows, count } = await this.repository.list(params);
-    const data = rows.map((row) => this.mapAppointment(row));
-    return { data, meta: this.buildMeta(params, count) };
+
+    return {
+      data: rows.map((row) => this.toAppointmentResponse(row)),
+      meta: this.buildMeta(params, count)
+    };
   }
 
   async listAll(input: ListFiltersInput): Promise<ListAppointmentsResult> {
-    const from = this.toDateOrUndefined(input.from);
-    const to = this.toDateOrUndefined(input.to);
-    const params: QueryFilters = {
-      page: input.page,
-      pageSize: input.pageSize,
-      sort: input.sort,
-      ...(from !== undefined ? { from } : {}),
-      ...(to !== undefined ? { to } : {})
-    };
+    const params = this.buildQueryFilters(input);
     const { rows, count } = await this.repository.list(params);
-    const data = rows.map((row) => this.mapAppointment(row));
-    return { data, meta: this.buildMeta(params, count) };
+
+    return {
+      data: rows.map((row) => this.toAppointmentResponse(row)),
+      meta: this.buildMeta(params, count)
+    };
   }
 
   async acceptAppointment(id: number, actorId: number) {
@@ -182,13 +189,8 @@ class AppointmentsService {
       "Aceite de agendamento",
       updated
     );
-    await this.activityLogs.createLog({
-      userId: actorId,
-      module: "APPOINTMENT",
-      activityType: activityTypes.APPOINTMENT_ACCEPT,
-      description: logDescription
-    });
-    return this.mapAppointment(updated);
+    await this.logActivity(actorId, activityTypes.APPOINTMENT_ACCEPT, logDescription);
+    return this.toAppointmentResponse(updated);
   }
 
   async cancelAppointment(id: number, actorId: number, role: UserRole) {
@@ -214,13 +216,8 @@ class AppointmentsService {
       "Cancelamento de agendamento",
       updated
     );
-    await this.activityLogs.createLog({
-      userId: actorId,
-      module: "APPOINTMENT",
-      activityType: activityTypes.APPOINTMENT_CANCEL,
-      description: logDescription
-    });
-    return this.mapAppointment(updated);
+    await this.logActivity(actorId, activityTypes.APPOINTMENT_CANCEL, logDescription);
+    return this.toAppointmentResponse(updated);
   }
 }
 

@@ -19,6 +19,15 @@ class AuthService  {
     private readonly activityLogs: ILogsService
   ) {}
 
+  private async logActivity(userId: number, activityType: string, description: string) {
+    await this.activityLogs.createLog({
+      userId,
+      module: "ACCOUNT",
+      activityType,
+      description
+    });
+  }
+
   async checkEmail(email: string): Promise<CheckEmailResult> {
     const user = await this.repository.findUserByEmail(email);
     const exists = Boolean(user);
@@ -52,12 +61,7 @@ class AuthService  {
     }
     const expiresAt = new Date(exp * 1000);
     await this.repository.createAuthToken(user.id, token, expiresAt);
-    await this.activityLogs.createLog({
-      userId: user.id,
-      module: "ACCOUNT",
-      activityType: activityTypes.LOGIN,
-      description: logMessages.USER_LOGIN
-    });
+    await this.logActivity(user.id, activityTypes.LOGIN, logMessages.USER_LOGIN);
     return {
       token,
       user: {
@@ -74,12 +78,7 @@ class AuthService  {
     if (!revoked) {
       throw new AuthTokenInvalidError();
     }
-    await this.activityLogs.createLog({
-      userId,
-      module: "ACCOUNT",
-      activityType: activityTypes.LOGOUT,
-      description: logMessages.USER_LOGOUT
-    });
+    await this.logActivity(userId, activityTypes.LOGOUT, logMessages.USER_LOGOUT);
   }
 }
 

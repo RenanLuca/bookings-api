@@ -1,8 +1,23 @@
-import type { CreateLogInput, ListLogsInput, ListLogsResult, LogResponse, ListAllLogsInput } from "./dto/index.js";
+import type { ActivityLog } from "../../models/activity-log.model.js";
+import type { CreateLogInput, ListLogsInput, ListLogsResult, LogResponse, ListAllLogsInput, ListLogsMeta } from "./dto/index.js";
 import type { ILogsRepository } from "./logs.repository.interface.js";
 
 class LogsService {
   constructor(private readonly repository: ILogsRepository) {}
+
+  private mapLog(log: ActivityLog): LogResponse {
+    return {
+      id: log.id,
+      module: log.module,
+      activityType: log.activityType,
+      description: log.description,
+      createdAt: log.createdAt.toISOString()
+    };
+  }
+
+  private buildMeta(page: number, pageSize: number, total: number, sort: "asc" | "desc"): ListLogsMeta {
+    return { page, pageSize, total, sort };
+  }
 
   async createLog(data: CreateLogInput) {
     return this.repository.create(data);
@@ -16,22 +31,9 @@ class LogsService {
       sort: params.sort
     });
 
-    const data: LogResponse[] = rows.map((log) => ({
-      id: log.id,
-      module: log.module,
-      activityType: log.activityType,
-      description: log.description,
-      createdAt: log.createdAt.toISOString()
-    }));
-
     return {
-      data,
-      meta: {
-        page: params.page,
-        pageSize: params.pageSize,
-        total: count,
-        sort: params.sort
-      }
+      data: rows.map((log) => this.mapLog(log)),
+      meta: this.buildMeta(params.page, params.pageSize, count, params.sort)
     };
   }
 
@@ -46,22 +48,9 @@ class LogsService {
       order: params.sort
     });
 
-    const data: LogResponse[] = rows.map((log) => ({
-      id: log.id,
-      module: log.module,
-      activityType: log.activityType,
-      description: log.description,
-      createdAt: log.createdAt.toISOString()
-    }));
-
     return {
-      data,
-      meta: {
-        page: params.page,
-        pageSize: params.pageSize,
-        total: count,
-        sort: params.sort
-      }
+      data: rows.map((log) => this.mapLog(log)),
+      meta: this.buildMeta(params.page, params.pageSize, count, params.sort)
     };
   }
 }
