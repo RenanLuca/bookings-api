@@ -24,10 +24,12 @@ tests {
   test("should return 200", function() {
     expect(res.getStatus()).to.equal(200);
   });
-  test("should include exists flag", function() {
-    const data = res.getBody();
-    expect(data).to.have.property("exists");
-    expect(data).to.have.property("canLogin");
+  test("should include success and data", function() {
+    const body = res.getBody();
+    expect(body).to.have.property("success", true);
+    expect(body).to.have.property("data");
+    expect(body.data).to.have.property("exists");
+    expect(body.data).to.have.property("canLogin");
   });
 }
 
@@ -45,8 +47,12 @@ docs {
   ## Exemplo de resposta (200)
   ```json
   {
-    "exists": true,
-    "canLogin": true
+    "success": true,
+    "message": "E-mail encontrado. Continue com a senha.",
+    "data": {
+      "exists": true,
+      "canLogin": true
+    }
   }
   ```
   

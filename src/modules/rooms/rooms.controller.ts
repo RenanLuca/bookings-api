@@ -1,6 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import { AuthTokenInvalidError } from "../auth/errors/index.js";
 import { RoomsFactory } from "./rooms.factory.js";
+import { ResponseHelper } from "../../shared/utils/response.helper.js";
+import { roomsMessages } from "./constants/index.js";
 import type { CreateRoomInput, UpdateRoomInput } from "./dto/index.js";
 
 const service = RoomsFactory.createService();
@@ -26,7 +28,18 @@ class RoomsController {
         params.name = name;
       }
       const result = await service.listRooms(params);
-      return res.json(result);
+      return res.status(200).json(
+        ResponseHelper.successWithPagination(
+          result.data,
+          {
+            page: result.meta.page,
+            limit: result.meta.pageSize,
+            total: result.meta.total,
+            totalPages: Math.ceil(result.meta.total / result.meta.pageSize)
+          },
+          roomsMessages.list.success
+        )
+      );
     } catch (error) {
       return next(error);
     }
@@ -36,7 +49,9 @@ class RoomsController {
     const id = Number(req.params.id);
     try {
       const room = await service.getRoomById(id);
-      return res.json(room);
+      return res.status(200).json(
+        ResponseHelper.success(room, roomsMessages.get.success)
+      );
     } catch (error) {
       return next(error);
     }
@@ -54,8 +69,10 @@ class RoomsController {
       slotDurationMinutes: req.body.slotDurationMinutes
     };
     try {
-      const room = await service.createRoom(payload, authUser.userId);
-      return res.status(201).json(room);
+      const result = await service.createRoom(payload, authUser.userId);
+      return res.status(201).json(
+        ResponseHelper.success(result.room, roomsMessages.create.success)
+      );
     } catch (error) {
       return next(error);
     }
@@ -74,8 +91,10 @@ class RoomsController {
       slotDurationMinutes: req.body?.slotDurationMinutes
     };
     try {
-      const room = await service.updateRoom(id, payload, authUser.userId);
-      return res.json(room);
+      const result = await service.updateRoom(id, payload, authUser.userId);
+      return res.status(200).json(
+        ResponseHelper.success(result.room, roomsMessages.update.success)
+      );
     } catch (error) {
       return next(error);
     }
@@ -89,7 +108,9 @@ class RoomsController {
     const id = Number(req.params.id);
     try {
       await service.deleteRoom(id, authUser.userId);
-      return res.status(204).send();
+      return res.status(200).json(
+        ResponseHelper.successMessage(roomsMessages.delete.success)
+      );
     } catch (error) {
       return next(error);
     }

@@ -9,6 +9,7 @@ import {
   AuthUserInactiveError
 } from "./errors/index.js";
 import { activityTypes, logMessages } from "../../shared/constants/log-messages.js";
+import { authMessages } from "./constants/index.js";
 import type { ILogsService } from "../logs/logs.service.interface.js";
 import type { IAuthRepository } from "./auth.repository.interface.js";
 import type { CheckEmailResult, LoginResult } from "./dto/index.js";
@@ -32,7 +33,17 @@ class AuthService  {
     const user = await this.repository.findUserByEmail(email);
     const exists = Boolean(user);
     const canLogin = Boolean(user && user.status === "ACTIVE");
-    return { exists, canLogin };
+
+    let message = "";
+    if (!exists) {
+      message = authMessages.checkEmail.notFound;
+    } else if (!canLogin) {
+      message = authMessages.checkEmail.inactive;
+    } else {
+      message = authMessages.checkEmail.found;
+    }
+
+    return { exists, canLogin, message };
   }
 
   async login(email: string, password: string): Promise<LoginResult> {
@@ -69,16 +80,18 @@ class AuthService  {
         name: user.name,
         email: user.email,
         role: user.role
-      }
+      },
+      message: authMessages.login.success
     };
   }
 
-  async logout(userId: number, token: string) {
+  async logout(userId: number, token: string): Promise<{ message: string }> {
     const revoked = await this.repository.revokeAuthToken(userId, token);
     if (!revoked) {
       throw new AuthTokenInvalidError();
     }
     await this.logActivity(userId, activityTypes.LOGOUT, logMessages.USER_LOGOUT);
+    return { message: authMessages.logout.success };
   }
 }
 

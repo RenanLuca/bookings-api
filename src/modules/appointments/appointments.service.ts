@@ -6,6 +6,7 @@ import {
   AppointmentInvalidStatusError,
   AppointmentForbiddenError
 } from "./errors/index.js";
+import { appointmentsMessages } from "./constants/index.js";
 import type { UserRole } from "../../models/user.model.js";
 import { activityTypes } from "../../shared/constants/log-messages.js";
 import { toAppIsoStringFromUtc, toUtcFromAppTz } from "../../shared/utils/datetime.js";
@@ -114,7 +115,7 @@ class AppointmentsService {
     };
   }
 
-  async createAppointment(userId: number, input: CreateAppointmentInput) {
+  async createAppointment(userId: number, input: CreateAppointmentInput): Promise<{ appointment: AppointmentResponse; message: string }> {
     const roomId = input.roomId;
     const scheduledAt = this.toDate(input.scheduledAt);
     const customer = await this.repository.findCustomerByUserId(userId);
@@ -144,7 +145,7 @@ class AppointmentsService {
       record
     );
     await this.logActivity(userId, activityTypes.APPOINTMENT_CREATE, logDescription);
-    return this.toAppointmentResponse(record);
+    return { appointment: this.toAppointmentResponse(record), message: appointmentsMessages.create.success };
   }
 
   async listMyAppointments(userId: number, input: ListFiltersInput): Promise<ListAppointmentsResult> {
@@ -173,7 +174,7 @@ class AppointmentsService {
     };
   }
 
-  async acceptAppointment(id: number, actorId: number) {
+  async acceptAppointment(id: number, actorId: number): Promise<{ appointment: AppointmentResponse; message: string }> {
     const appointment = await this.repository.findByIdWithRelations(id);
     if (!appointment) {
       throw new AppointmentNotFoundError();
@@ -190,10 +191,10 @@ class AppointmentsService {
       updated
     );
     await this.logActivity(actorId, activityTypes.APPOINTMENT_ACCEPT, logDescription);
-    return this.toAppointmentResponse(updated);
+    return { appointment: this.toAppointmentResponse(updated), message: appointmentsMessages.accept.success };
   }
 
-  async cancelAppointment(id: number, actorId: number, role: UserRole) {
+  async cancelAppointment(id: number, actorId: number, role: UserRole): Promise<{ appointment: AppointmentResponse; message: string }> {
     const appointment = await this.repository.findByIdWithRelations(id);
     if (!appointment) {
       throw new AppointmentNotFoundError();
@@ -217,7 +218,7 @@ class AppointmentsService {
       updated
     );
     await this.logActivity(actorId, activityTypes.APPOINTMENT_CANCEL, logDescription);
-    return this.toAppointmentResponse(updated);
+    return { appointment: this.toAppointmentResponse(updated), message: appointmentsMessages.cancel.success };
   }
 }
 

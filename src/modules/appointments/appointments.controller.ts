@@ -1,6 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import { AuthTokenInvalidError } from "../auth/errors/index.js";
 import { AppointmentsFactory } from "./appointments.factory.js";
+import { ResponseHelper } from "../../shared/utils/response.helper.js";
+import { appointmentsMessages } from "./constants/index.js";
 import type { CreateAppointmentInput } from "./dto/index.js";
 
 const service = AppointmentsFactory.createService();
@@ -16,11 +18,13 @@ class AppointmentsController {
       scheduledAt: req.body.scheduledAt
     };
     try {
-      const appointment = await service.createAppointment(
+      const result = await service.createAppointment(
         authUser.userId,
         payload
       );
-      return res.status(201).json(appointment);
+      return res.status(201).json(
+        ResponseHelper.success(result.appointment, appointmentsMessages.create.success)
+      );
     } catch (error) {
       return next(error);
     }
@@ -45,11 +49,22 @@ class AppointmentsController {
         ...(from !== undefined ? { from } : {}),
         ...(to !== undefined ? { to } : {})
       };
-      const appointments = await service.listMyAppointments(
+      const result = await service.listMyAppointments(
         authUser.userId,
         filters
       );
-      return res.json(appointments);
+      return res.status(200).json(
+        ResponseHelper.successWithPagination(
+          result.data,
+          {
+            page: result.meta.page,
+            limit: result.meta.pageSize,
+            total: result.meta.total,
+            totalPages: Math.ceil(result.meta.total / result.meta.pageSize)
+          },
+          appointmentsMessages.list.success
+        )
+      );
     } catch (error) {
       return next(error);
     }
@@ -70,8 +85,19 @@ class AppointmentsController {
         ...(from !== undefined ? { from } : {}),
         ...(to !== undefined ? { to } : {})
       };
-      const appointments = await service.listAll(filters);
-      return res.json(appointments);
+      const result = await service.listAll(filters);
+      return res.status(200).json(
+        ResponseHelper.successWithPagination(
+          result.data,
+          {
+            page: result.meta.page,
+            limit: result.meta.pageSize,
+            total: result.meta.total,
+            totalPages: Math.ceil(result.meta.total / result.meta.pageSize)
+          },
+          appointmentsMessages.list.success
+        )
+      );
     } catch (error) {
       return next(error);
     }
@@ -84,8 +110,10 @@ class AppointmentsController {
     }
     const id = Number(req.params.id);
     try {
-      const appointment = await service.acceptAppointment(id, authUser.userId);
-      return res.json(appointment);
+      const result = await service.acceptAppointment(id, authUser.userId);
+      return res.status(200).json(
+        ResponseHelper.success(result.appointment, appointmentsMessages.accept.success)
+      );
     } catch (error) {
       return next(error);
     }
@@ -98,8 +126,10 @@ class AppointmentsController {
     }
     const id = Number(req.params.id);
     try {
-      const appointment = await service.cancelAppointment(id, authUser.userId, authUser.role);
-      return res.json(appointment);
+      const result = await service.cancelAppointment(id, authUser.userId, authUser.role);
+      return res.status(200).json(
+        ResponseHelper.success(result.appointment, appointmentsMessages.cancel.success)
+      );
     } catch (error) {
       return next(error);
     }

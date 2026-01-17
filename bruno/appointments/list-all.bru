@@ -25,6 +25,8 @@ docs {
   ## Exemplo de resposta (200)
   ```json
   {
+    "success": true,
+    "message": "Agendamentos listados com sucesso.",
     "data": [
       {
         "id": 10,
@@ -44,10 +46,12 @@ docs {
       }
     ],
     "meta": {
-      "page": 1,
-      "pageSize": 10,
-      "total": 1,
-      "sort": "desc"
+      "pagination": {
+        "page": 1,
+        "limit": 10,
+        "total": 1,
+        "totalPages": 1
+      }
     }
   }
   ```

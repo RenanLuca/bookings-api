@@ -2,6 +2,8 @@ import type { NextFunction, Request, Response } from "express";
 import { AuthTokenInvalidError } from "../auth/errors/index.js";
 import { CustomersFactory } from "./customers.factory.js";
 import { PermissionsFactory } from "../permissions/permissions.factory.js";
+import { customersMessages } from "./constants/index.js";
+import { ResponseHelper } from "../../shared/utils/response.helper.js";
 import type { RegisterInput, UpdateProfileInput, CustomerData } from "./dto/index.js";
 import type { ModulePermissionUpdate } from "../permissions/permissions.service.interface.js";
 
@@ -20,8 +22,10 @@ class CustomersController {
       if (customer && typeof customer === "object") {
         input.customer = customer;
       }
-      const profile = await service.register(input);
-      return res.status(201).json(profile);
+      const result = await service.register(input);
+      return res.status(201).json(
+        ResponseHelper.success(result.profile, customersMessages.register.success)
+      );
     } catch (error) {
       return next(error);
     }
@@ -47,7 +51,18 @@ class CustomersController {
         params.name = name;
       }
       const result = await service.listCustomers(params);
-      return res.json(result);
+      return res.status(200).json(
+        ResponseHelper.successWithPagination(
+          result.data,
+          {
+            page: result.meta.page,
+            limit: result.meta.pageSize,
+            total: result.meta.total,
+            totalPages: Math.ceil(result.meta.total / result.meta.pageSize)
+          },
+          customersMessages.list.success
+        )
+      );
     } catch (error) {
       return next(error);
     }
@@ -57,7 +72,9 @@ class CustomersController {
     const id = Number(req.params.id);
     try {
       const profile = await service.getCustomerById(id);
-      return res.json(profile);
+      return res.status(200).json(
+        ResponseHelper.success(profile, customersMessages.get.success)
+      );
     } catch (error) {
       return next(error);
     }
@@ -67,7 +84,9 @@ class CustomersController {
     const id = Number(req.params.id);
     try {
       await service.softDeleteCustomer(id);
-      return res.status(204).send();
+      return res.status(200).json(
+        ResponseHelper.successMessage(customersMessages.delete.success)
+      );
     } catch (error) {
       return next(error);
     }
@@ -80,7 +99,9 @@ class CustomersController {
     }
     try {
       const profile = await service.getProfile(authUser.userId);
-      return res.json(profile);
+      return res.status(200).json(
+        ResponseHelper.success(profile, customersMessages.get.success)
+      );
     } catch (error) {
       return next(error);
     }
@@ -136,8 +157,10 @@ class CustomersController {
       if (Object.keys(updateCustomer).length) {
         payload.customer = updateCustomer;
       }
-      const profile = await service.updateProfile(authUser.userId, payload);
-      return res.json(profile);
+      const result = await service.updateProfile(authUser.userId, payload);
+      return res.status(200).json(
+        ResponseHelper.success(result.profile, customersMessages.update.success)
+      );
     } catch (error) {
       return next(error);
     }
@@ -156,7 +179,9 @@ class CustomersController {
         modules,
         authUser.userId
       );
-      return res.json({ permissions });
+      return res.status(200).json(
+        ResponseHelper.success({ permissions }, customersMessages.permissions.success)
+      );
     } catch (error) {
       return next(error);
     }

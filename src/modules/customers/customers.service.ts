@@ -6,6 +6,7 @@ import {
   UserNotFoundError,
   UserEmailAlreadyExistsError
 } from "./errors/index.js";
+import { customersMessages } from "./constants/index.js";
 import type { ActivityLogModule } from "../../models/activity-log.model.js";
 import type { ILogsService } from "../logs/logs.service.interface.js";
 import type { IPermissionsService } from "../permissions/permissions.service.interface.js";
@@ -140,7 +141,7 @@ class CustomersService {
     return this.mapProfile(profile);
   }
 
-  async updateProfile(userId: number, input: UpdateProfileInput) {
+  async updateProfile(userId: number, input: UpdateProfileInput): Promise<{ profile: ProfileResult; message: string }> {
     const transaction = await sequelize.transaction();
     let emailChanged = false;
     let oldEmail = "";
@@ -193,10 +194,10 @@ class CustomersService {
       await this.logEmailChange(userId, oldEmail, newEmail);
     }
 
-    return this.mapProfile(updatedProfile);
+    return { profile: this.mapProfile(updatedProfile), message: customersMessages.update.success };
   }
 
-  async register(input: RegisterInput): Promise<ProfileResult> {
+  async register(input: RegisterInput): Promise<{ profile: ProfileResult; message: string }> {
     const passwordHash = await bcrypt.hash(input.password, 10);
     const customerData: CustomerData = {
       zipCode: input.customer?.zipCode ?? "",
@@ -228,7 +229,7 @@ class CustomersService {
         transaction
       );
       await transaction.commit();
-      return this.mapProfile(profile);
+      return { profile: this.mapProfile(profile), message: customersMessages.register.success };
     } catch (error) {
       await transaction.rollback();
       if (error instanceof UniqueConstraintError) {
@@ -258,11 +259,12 @@ class CustomersService {
     return this.mapProfile(profile);
   }
 
-  async softDeleteCustomer(id: number): Promise<void> {
+  async softDeleteCustomer(id: number): Promise<{ message: string }> {
     const deleted = await this.repository.softDeleteById(id);
     if (!deleted) {
       throw new UserNotFoundError();
     }
+    return { message: customersMessages.delete.success };
   }
 }
 

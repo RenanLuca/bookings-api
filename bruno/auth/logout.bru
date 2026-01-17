@@ -22,13 +22,16 @@ docs {
   Header: Authorization: Bearer {{token}}
   ```
 
-  ## Exemplo de resposta (204)
-  ```
-  Sem conteúdo
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "success": true,
+    "message": "Logout realizado com sucesso."
+  }
   ```
 
   ## Status codes
-  - 204 Sucesso
+  - 200 Sucesso
   - 401 Token inválido ou ausente
   - 500 Erro interno
 }

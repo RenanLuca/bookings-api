@@ -24,10 +24,13 @@ body:json {
 tests {
   test("should login successfully", function() {
     expect(res.getStatus()).to.equal(200);
-    expect(res.getBody()).to.have.property('user');
-    expect(res.getBody()).to.have.property('token');
-    bru.setVar("token", res.getBody().token);
-    bru.setVar("userId", res.getBody().user.id);
+    const body = res.getBody();
+    expect(body).to.have.property("success", true);
+    expect(body).to.have.property("data");
+    expect(body.data).to.have.property("user");
+    expect(body.data).to.have.property("token");
+    bru.setVar("token", body.data.token);
+    bru.setVar("userId", body.data.user.id);
   });
 }
 
@@ -46,12 +49,16 @@ docs {
   ## Exemplo de resposta (200)
   ```json
   {
-    "token": "eyJhbGciOi...",
-    "user": {
-      "id": 1,
-      "name": "Admin",
-      "email": "admin@example.com",
-      "role": "ADMIN"
+    "success": true,
+    "message": "Login realizado com sucesso.",
+    "data": {
+      "token": "eyJhbGciOi...",
+      "user": {
+        "id": 1,
+        "name": "Admin",
+        "email": "admin@example.com",
+        "role": "ADMIN"
+      }
     }
   }
   ```

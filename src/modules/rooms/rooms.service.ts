@@ -1,5 +1,6 @@
 import { ValidationError } from "../../shared/errors/index.js";
 import { RoomNotFoundError } from "./errors/index.js";
+import { roomsMessages } from "./constants/index.js";
 import type { ILogsService } from "../logs/logs.service.interface.js";
 import type { IRoomsRepository } from "./rooms.repository.interface.js";
 import type {
@@ -93,7 +94,7 @@ class RoomsService {
     return room;
   }
 
-  async createRoom(input: CreateRoomInput, actorId: number) {
+  async createRoom(input: CreateRoomInput, actorId: number): Promise<{ room: typeof room; message: string }> {
     const name = input.name.trim();
     const startTime = this.parseTime(input.startTime);
     const endTime = this.parseTime(input.endTime);
@@ -108,7 +109,7 @@ class RoomsService {
       room.startTime
     )}-${this.formatTime(room.endTime)}, slot ${room.slotDurationMinutes}m)`;
     await this.logActivity(actorId, "Criação de sala", logDescription);
-    return room;
+    return { room, message: roomsMessages.create.success };
   }
 
   private buildRoomUpdates(
@@ -163,7 +164,7 @@ class RoomsService {
     return { updates, changes, finalStart, finalEnd };
   }
 
-  async updateRoom(id: number, input: UpdateRoomInput, actorId: number) {
+  async updateRoom(id: number, input: UpdateRoomInput, actorId: number): Promise<{ room: typeof updated; message: string }> {
     const current = await this.repository.findById(id);
     if (!current) {
       throw new RoomNotFoundError();
@@ -178,7 +179,7 @@ class RoomsService {
 
     const hasUpdates = Object.keys(updates).length > 0;
     if (!hasUpdates) {
-      return current;
+      return { room: current, message: roomsMessages.update.success };
     }
 
     const updated = await this.repository.updateById(id, updates);
@@ -191,10 +192,10 @@ class RoomsService {
       await this.logActivity(actorId, "Atualização de sala", logDescription);
     }
 
-    return updated;
+    return { room: updated, message: roomsMessages.update.success };
   }
 
-  async deleteRoom(id: number, actorId: number) {
+  async deleteRoom(id: number, actorId: number): Promise<{ message: string }> {
     const room = await this.repository.findById(id);
     if (!room) {
       throw new RoomNotFoundError();
@@ -205,6 +206,7 @@ class RoomsService {
     }
     const logDescription = `Removeu sala '${room.name}'`;
     await this.logActivity(actorId, "Remoção de sala", logDescription);
+    return { message: roomsMessages.delete.success };
   }
 }
 

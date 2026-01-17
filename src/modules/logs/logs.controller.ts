@@ -1,6 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import { AuthTokenInvalidError } from "../auth/errors/index.js";
 import { LogsFactory } from "./logs.factory.js";
+import { ResponseHelper } from "../../shared/utils/response.helper.js";
+import { logsMessages } from "./constants/index.js";
 import type { ListLogsInput, ListAllLogsInput } from "./dto/index.js";
 import type { ActivityLogModule } from "../../models/activity-log.model.js";
 
@@ -22,7 +24,18 @@ class LogsController {
 
     try {
       const result = await service.listByUserId(authUser.userId, params);
-      return res.json(result);
+      return res.status(200).json(
+        ResponseHelper.successWithPagination(
+          result.data,
+          {
+            page: result.meta.page,
+            limit: result.meta.pageSize,
+            total: result.meta.total,
+            totalPages: Math.ceil(result.meta.total / result.meta.pageSize)
+          },
+          logsMessages.list.success
+        )
+      );
     } catch (error) {
       return next(error);
     }
@@ -40,7 +53,18 @@ class LogsController {
 
     try {
       const result = await service.listAllLogs(params);
-      return res.json(result);
+      return res.status(200).json(
+        ResponseHelper.successWithPagination(
+          result.data,
+          {
+            page: result.meta.page,
+            limit: result.meta.pageSize,
+            total: result.meta.total,
+            totalPages: Math.ceil(result.meta.total / result.meta.pageSize)
+          },
+          logsMessages.list.success
+        )
+      );
     } catch (error) {
       return next(error);
     }

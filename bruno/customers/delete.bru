@@ -26,11 +26,16 @@ docs {
   Header: Authorization: Bearer {{token}}
   ```
 
-  ## Exemplo de resposta (204)
-  Sem conteúdo no corpo da resposta.
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "success": true,
+    "message": "Cliente removido com sucesso."
+  }
+  ```
 
   ## Status codes
-  - 204 Removido com sucesso
+  - 200 Removido com sucesso
   - 400 Erro de validação (ID inválido)
   - 401 Token inválido ou ausente
   - 403 Acesso negado (role não é ADMIN)

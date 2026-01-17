@@ -8,4 +8,5 @@ export type LoginResult = {
     email: string;
     role: UserRole;
   };
+  message: string;
 };

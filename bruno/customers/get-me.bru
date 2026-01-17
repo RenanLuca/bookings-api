@@ -25,26 +25,30 @@ docs {
   ## Exemplo de resposta (200)
   ```json
   {
-    "user": {
-      "id": 5,
-      "name": "Cliente Demo",
-      "email": "cliente.demo@example.com",
-      "role": "CUSTOMER",
-      "status": "ACTIVE"
-    },
-    "customer": {
-      "id": 3,
-      "userId": 5,
-      "zipCode": "01001-000",
-      "street": "Praça da Sé",
-      "number": "100",
-      "complement": "Sala 1",
-      "neighborhood": "Sé",
-      "city": "São Paulo",
-      "state": "SP",
-      "createdAt": "2026-01-14T12:00:00Z",
-      "updatedAt": "2026-01-14T12:00:00Z",
-      "deletedAt": null
+    "success": true,
+    "message": "Cliente recuperado com sucesso.",
+    "data": {
+      "user": {
+        "id": 5,
+        "name": "Cliente Demo",
+        "email": "cliente.demo@example.com",
+        "role": "CUSTOMER",
+        "status": "ACTIVE"
+      },
+      "customer": {
+        "id": 3,
+        "userId": 5,
+        "zipCode": "01001-000",
+        "street": "Praça da Sé",
+        "number": "100",
+        "complement": "Sala 1",
+        "neighborhood": "Sé",
+        "city": "São Paulo",
+        "state": "SP",
+        "createdAt": "2026-01-14T12:00:00Z",
+        "updatedAt": "2026-01-14T12:00:00Z",
+        "deletedAt": null
+      }
     }
   }
   ```
