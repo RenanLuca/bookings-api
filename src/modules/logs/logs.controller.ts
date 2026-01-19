@@ -5,6 +5,10 @@ import { ResponseHelper } from "../../shared/utils/response.helper.js";
 import { logsMessages } from "./constants/index.js";
 import type { ListLogsInput, ListAllLogsInput } from "./dto/index.js";
 import type { ActivityLogModule } from "../../models/activity-log.model.js";
+import {
+  toUtcEndOfDayFromAppTz,
+  toUtcStartOfDayFromAppTz
+} from "../../shared/utils/datetime.js";
 
 const service = LogsFactory.createService();
 
@@ -19,8 +23,20 @@ class LogsController {
     const pageSize = req.query.pageSize ? Number(req.query.pageSize) : 10;
     const sortParam = typeof req.query.sort === "string" ? req.query.sort : "";
     const sort = sortParam === "asc" ? "asc" : "desc";
+    const search = typeof req.query.search === "string" ? req.query.search.trim() : undefined;
+    const fromParam = typeof req.query.from === "string" ? req.query.from : undefined;
+    const toParam = typeof req.query.to === "string" ? req.query.to : undefined;
+    const from = fromParam ? toUtcStartOfDayFromAppTz(fromParam) : undefined;
+    const to = toParam ? toUtcEndOfDayFromAppTz(toParam) : undefined;
 
-    const params: ListLogsInput = { page, pageSize, sort };
+    const params: ListLogsInput = {
+      page,
+      pageSize,
+      sort,
+      ...(search ? { search } : {}),
+      ...(from ? { from } : {}),
+      ...(to ? { to } : {})
+    };
 
     try {
       const result = await service.listByUserId(authUser.userId, params);
@@ -47,9 +63,23 @@ class LogsController {
     const sortParam = typeof req.query.sort === "string" ? req.query.sort : "";
     const sort = sortParam === "asc" ? "asc" : "desc";
     const module = typeof req.query.module === "string" ? req.query.module as ActivityLogModule : undefined;
-    const userId = req.query.userId ? Number(req.query.userId) : undefined;
+    const userId = typeof req.query.userId === "string" ? Number(req.query.userId) : undefined;
+    const search = typeof req.query.search === "string" ? req.query.search.trim() : undefined;
+    const fromParam = typeof req.query.from === "string" ? req.query.from : undefined;
+    const toParam = typeof req.query.to === "string" ? req.query.to : undefined;
+    const from = fromParam ? toUtcStartOfDayFromAppTz(fromParam) : undefined;
+    const to = toParam ? toUtcEndOfDayFromAppTz(toParam) : undefined;
 
-    const params: ListAllLogsInput = { page, pageSize, sort, module, userId };
+    const params: ListAllLogsInput = {
+      page,
+      pageSize,
+      sort,
+      ...(module ? { module } : {}),
+      ...(userId && !Number.isNaN(userId) ? { userId } : {}),
+      ...(search ? { search } : {}),
+      ...(from ? { from } : {}),
+      ...(to ? { to } : {})
+    };
 
     try {
       const result = await service.listAllLogs(params);

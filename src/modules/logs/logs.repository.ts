@@ -1,9 +1,77 @@
-import type { FindAndCountOptions, OrderItem, WhereOptions } from "sequelize";
-import { ActivityLog } from "../../models/index.js";
+import { Op, type FindAndCountOptions, type OrderItem } from "sequelize";
+import { ActivityLog, User } from "../../models/index.js";
 import type { CreateLogInput } from "./dto/index.js";
 import type { ILogsRepository, ListByUserIdParams, FindAllWithFiltersParams } from "./logs.repository.interface.js";
+import { LogsModules } from "./dto/logs-modules.dto.js";
 
 class LogsRepository implements ILogsRepository {
+  private resolveModulesFromSearch(
+    search: string
+  ): Array<LogsModules> {
+    const normalized = search.trim().toLowerCase();
+    const modules: Array<LogsModules> = [];
+    if (!normalized) {
+      return modules;
+    }
+
+    const appointmentAliases = ["agendamento", "agendamentos"];
+    const accountAliases = ["minha conta", "conta"];
+
+    const matchesAppointment = appointmentAliases.some((alias) =>
+      normalized.includes(alias)
+    );
+    const matchesAccount = accountAliases.some((alias) =>
+      normalized.includes(alias)
+    );
+
+    if (matchesAppointment) {
+      modules.push(LogsModules.APPOINTMENT);
+    }
+
+    if (matchesAccount) {
+      modules.push(LogsModules.ACCOUNT);
+    }
+
+    return modules;
+  }
+
+  private buildSearchWhere(search?: string): Record<string, unknown> {
+    if (!search) {
+      return {};
+    }
+    const trimmed = search.trim();
+    if (!trimmed) {
+      return {};
+    }
+    const modules = this.resolveModulesFromSearch(trimmed);
+    const orConditions: Record<string, unknown>[] = [
+      { activityType: { [Op.like]: `%${trimmed}%` } },
+      { module: { [Op.like]: `%${trimmed}%` } },
+      { description: { [Op.like]: `%${trimmed}%` } },
+      { "$User.name$": { [Op.like]: `%${trimmed}%` } }
+    ];
+    if (modules.length > 0) {
+      orConditions.push({ module: { [Op.in]: modules } });
+    }
+    return {
+      [Op.or]: orConditions
+    };
+  }
+
+  private buildDateRangeWhere(from?: Date, to?: Date): Record<string, unknown> {
+    if (!from && !to) {
+      return {};
+    }
+    const range: { [key: symbol]: Date } = {};
+    if (from) {
+      range[Op.gte] = from;
+    }
+    if (to) {
+      range[Op.lte] = to;
+    }
+    return { createdAt: range };
+  }
+
   async create(data: CreateLogInput) {
     return ActivityLog.create(data);
   }
@@ -12,11 +80,18 @@ class LogsRepository implements ILogsRepository {
     const offset = (params.page - 1) * params.pageSize;
     const direction = params.sort === "asc" ? "ASC" : "DESC";
     const order: OrderItem[] = [["createdAt", direction], ["id", direction]];
+    const where: Record<string, unknown> = {
+      userId: params.userId,
+      ...this.buildDateRangeWhere(params.from, params.to),
+      ...this.buildSearchWhere(params.search)
+    };
     const options: FindAndCountOptions = {
-      where: { userId: params.userId },
+      where,
       limit: params.pageSize,
       offset,
-      order
+      order,
+      include: [{ model: User, attributes: ["id", "name", "role"] }],
+      distinct: true
     };
     return ActivityLog.findAndCountAll(options);
   }
@@ -24,7 +99,10 @@ class LogsRepository implements ILogsRepository {
   async findAllWithFilters(params: FindAllWithFiltersParams) {
     const direction = params.order === "asc" ? "ASC" : "DESC";
     const order: OrderItem[] = [["createdAt", direction], ["id", direction]];
-    const where: WhereOptions = {};
+    const where: Record<string, unknown> = {
+      ...this.buildDateRangeWhere(params.from, params.to),
+      ...this.buildSearchWhere(params.search)
+    };
 
     if (params.module) {
       where.module = params.module;
@@ -38,7 +116,9 @@ class LogsRepository implements ILogsRepository {
       where,
       limit: params.limit,
       offset: params.offset,
-      order
+      order,
+      include: [{ model: User, attributes: ["id", "name", "role"] }],
+      distinct: true
     };
 
     return ActivityLog.findAndCountAll(options);

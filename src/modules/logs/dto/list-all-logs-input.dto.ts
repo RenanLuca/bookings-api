@@ -6,4 +6,7 @@ export type ListAllLogsInput = {
   sort: "asc" | "desc";
   module?: ActivityLogModule | undefined;
   userId?: number | undefined;
+  from?: Date;
+  to?: Date;
+  search?: string;
 };

@@ -6,6 +6,9 @@ type ListByUserIdParams = {
   page: number;
   pageSize: number;
   sort: "asc" | "desc";
+  from?: Date;
+  to?: Date;
+  search?: string;
 };
 
 type FindAllWithFiltersParams = {
@@ -14,6 +17,9 @@ type FindAllWithFiltersParams = {
   limit: number;
   offset: number;
   order: "asc" | "desc";
+  from?: Date;
+  to?: Date;
+  search?: string;
 };
 
 interface ILogsRepository {

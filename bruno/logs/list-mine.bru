@@ -1,0 +1,62 @@
+meta {
+  name: Listar Meus Logs
+  type: "http"
+}
+
+get {
+  url: {{baseUrl}}/logs/me?page=1&pageSize=10&sort=desc&from=&to=&search=
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Listar Meus Logs
+  Lista os logs do usuário autenticado com filtros opcionais de data, busca e ordenação. A busca considera cliente, tipo de atividade, módulo e descrição. Requer token de cliente com permissão de LOGS.
+
+  ## Exemplo de requisição
+  ```
+  GET {{baseUrl}}/logs/me?page=1&pageSize=10&sort=desc&from=2026-01-15&to=2026-01-31&search=Login
+  Header: Authorization: Bearer {{token}}
+  ```
+
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "success": true,
+    "message": "Logs listados com sucesso.",
+    "data": [
+      {
+        "id": 98,
+        "module": "ACCOUNT",
+        "activityType": "Login",
+        "description": "Usuário realizou login",
+        "createdAt": "2026-01-15T11:10:00.000Z",
+        "user": {
+          "id": 3,
+          "name": "Cliente Demo",
+          "role": "CUSTOMER"
+        }
+      }
+    ],
+    "meta": {
+      "pagination": {
+        "page": 1,
+        "limit": 10,
+        "total": 1,
+        "totalPages": 1
+      }
+    }
+  }
+  ```
+
+  ## Status codes
+  - 200 Sucesso
+  - 400 Erro de validação
+  - 401 Token inválido ou ausente
+  - 403 Acesso negado
+  - 500 Erro interno
+}
+

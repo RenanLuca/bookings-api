@@ -1,17 +1,31 @@
 import type { ActivityLog } from "../../models/activity-log.model.js";
+import type { UserRole } from "../../models/user.model.js";
 import type { CreateLogInput, ListLogsInput, ListLogsResult, LogResponse, ListAllLogsInput, ListLogsMeta } from "./dto/index.js";
 import type { ILogsRepository } from "./logs.repository.interface.js";
+
+type ActivityLogWithUser = ActivityLog & {
+  User?: { id: number; name: string; role: UserRole } | null;
+};
 
 class LogsService {
   constructor(private readonly repository: ILogsRepository) {}
 
-  private mapLog(log: ActivityLog): LogResponse {
+  private mapLog(log: ActivityLogWithUser): LogResponse {
     return {
       id: log.id,
       module: log.module,
       activityType: log.activityType,
       description: log.description,
-      createdAt: log.createdAt.toISOString()
+      createdAt: log.createdAt.toISOString(),
+      ...(log.User
+        ? {
+            user: {
+              id: log.User.id,
+              name: log.User.name,
+              role: log.User.role
+            }
+          }
+        : {})
     };
   }
 
@@ -28,11 +42,14 @@ class LogsService {
       userId,
       page: params.page,
       pageSize: params.pageSize,
-      sort: params.sort
+      sort: params.sort,
+      ...(params.from ? { from: params.from } : {}),
+      ...(params.to ? { to: params.to } : {}),
+      ...(typeof params.search === "string" ? { search: params.search } : {})
     });
 
     return {
-      data: rows.map((log) => this.mapLog(log)),
+      data: rows.map((log) => this.mapLog(log as ActivityLogWithUser)),
       meta: this.buildMeta(params.page, params.pageSize, count, params.sort)
     };
   }
@@ -45,11 +62,14 @@ class LogsService {
       userId: params.userId,
       limit: params.pageSize,
       offset,
-      order: params.sort
+      order: params.sort,
+      ...(params.from ? { from: params.from } : {}),
+      ...(params.to ? { to: params.to } : {}),
+      ...(typeof params.search === "string" ? { search: params.search } : {})
     });
 
     return {
-      data: rows.map((log) => this.mapLog(log)),
+      data: rows.map((log) => this.mapLog(log as ActivityLogWithUser)),
       meta: this.buildMeta(params.page, params.pageSize, count, params.sort)
     };
   }
