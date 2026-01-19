@@ -159,6 +159,60 @@ describe("Appointments Endpoints", () => {
     });
   });
 
+  describe("POST /appointments - Room hours validation", () => {
+    it("should return 400 when scheduledAt is before room startTime", async () => {
+      const room = await createRoom("Room Hours Start Test");
+      const customer = await createCustomerWithPermission("customer-hours-start@test.com");
+
+      const response = await request(app)
+        .post("/appointments")
+        .set("Authorization", `Bearer ${customer.token}`)
+        .send({
+          roomId: room.id,
+          scheduledAt: "2026-01-21T07:00:00"
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty("code", "APPOINTMENT_OUTSIDE_ROOM_HOURS");
+    });
+
+    it("should return 400 when scheduledAt is after room endTime", async () => {
+      const room = await createRoom("Room Hours End Test");
+      const customer = await createCustomerWithPermission("customer-hours-end@test.com");
+
+      const response = await request(app)
+        .post("/appointments")
+        .set("Authorization", `Bearer ${customer.token}`)
+        .send({
+          roomId: room.id,
+          scheduledAt: "2026-01-21T18:30:00"
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty("code", "APPOINTMENT_OUTSIDE_ROOM_HOURS");
+    });
+  });
+
+  describe("POST /appointments - Date validation", () => {
+    it("should return 400 when scheduledAt is before today", async () => {
+      const room = await createRoom("Room Date Validation Test");
+      const customer = await createCustomerWithPermission("customer-date-validation@test.com");
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      const response = await request(app)
+        .post("/appointments")
+        .set("Authorization", `Bearer ${customer.token}`)
+        .send({
+          roomId: room.id,
+          scheduledAt: yesterday.toISOString()
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty("code", "APPOINTMENT_DATE_IN_PAST");
+    });
+  });
+
   describe("POST /appointments - Different rooms same time", () => {
     it("should allow same scheduledAt in different rooms", async () => {
       const roomA = await createRoom("Room A");

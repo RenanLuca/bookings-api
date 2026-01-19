@@ -17,6 +17,32 @@ module.exports = {
       }
     ]);
 
+    const [users] = await queryInterface.sequelize.query(
+      "SELECT id FROM users WHERE email = :email LIMIT 1",
+      { replacements: { email: "admin@bookings2.com" } }
+    );
+
+    const adminUserId = users?.[0]?.id;
+
+    if (!adminUserId) {
+      throw new Error("Admin customer user not found");
+    }
+
+    await queryInterface.bulkInsert("customers", [
+      {
+        userId: adminUserId,
+        zipCode: "01001-000",
+        street: "Praça da Sé",
+        number: "100",
+        complement: null,
+        neighborhood: "Sé",
+        city: "São Paulo",
+        state: "SP",
+        createdAt: now,
+        updatedAt: now
+      }
+    ]);
+
     await queryInterface.bulkInsert("rooms", [
       {
         name: "Sala padrão",
@@ -31,6 +57,7 @@ module.exports = {
 
   async down(queryInterface) {
     await queryInterface.bulkDelete("rooms", { name: "Sala padrão" });
+    await queryInterface.bulkDelete("customers", {});
     await queryInterface.bulkDelete("users", { email: "admin@bookings2.com" });
   }
 };

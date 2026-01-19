@@ -4,12 +4,16 @@ import {
   AppointmentConflictError,
   AppointmentNotFoundError,
   AppointmentInvalidStatusError,
-  AppointmentForbiddenError
+  AppointmentForbiddenError,
+  AppointmentOutsideRoomHoursError,
+  AppointmentDateInPastError
 } from "./errors/index.js";
 import { appointmentsMessages } from "./constants/index.js";
 import type { UserRole } from "../../models/user.model.js";
 import { activityTypes } from "../../shared/constants/log-messages.js";
 import {
+  toAppIsoStringFromUtc,
+  toAppTzFromUtc,
   toUtcFromAppTz,
   toUtcIsoString,
   toUtcStartOfDayFromAppTz,
@@ -48,12 +52,41 @@ class AppointmentsService {
     return toUtcFromAppTz(value.trim());
   }
 
-  private toDateOrUndefined(value?: string): Date | undefined {
-    if (value === undefined) {
-      return undefined;
-    }
-    return toUtcFromAppTz(value.trim());
+  private getTimeSecondsFromRoomTime(value: string): number {
+    const trimmed = value.trim();
+    const segments = trimmed.split(":");
+    const hours = Number.parseInt(segments[0] ?? "0", 10);
+    const minutes = Number.parseInt(segments[1] ?? "0", 10);
+    const seconds = Number.parseInt(segments[2] ?? "0", 10);
+    return hours * 3600 + minutes * 60 + seconds;
   }
+
+  private getScheduledSecondsInAppTimezone(scheduledAt: Date): number {
+    const localDate = toAppTzFromUtc(scheduledAt);
+    return localDate.getHours() * 3600 + localDate.getMinutes() * 60 + localDate.getSeconds();
+  }
+
+  private isScheduledWithinRoomHours(
+    room: { startTime: string; endTime: string },
+    scheduledAt: Date
+  ): boolean {
+    const scheduledSeconds = this.getScheduledSecondsInAppTimezone(scheduledAt);
+    const startSeconds = this.getTimeSecondsFromRoomTime(room.startTime);
+    const endSeconds = this.getTimeSecondsFromRoomTime(room.endTime);
+    return scheduledSeconds >= startSeconds && scheduledSeconds <= endSeconds;
+  }
+
+  private getTodayStartUtc(): Date {
+    const nowInAppTimezone = toAppIsoStringFromUtc(new Date());
+    const todayDate = nowInAppTimezone.split("T")[0] ?? "";
+    return toUtcStartOfDayFromAppTz(todayDate);
+  }
+
+  private isScheduledBeforeToday(scheduledAt: Date): boolean {
+    const todayStartUtc = this.getTodayStartUtc();
+    return scheduledAt < todayStartUtc;
+  }
+
 
   private toAppointmentResponse(record: AppointmentWithRelations): AppointmentResponse {
     const scheduledAt = toUtcIsoString(record.scheduledAt);
@@ -124,6 +157,9 @@ class AppointmentsService {
   async createAppointment(userId: number, input: CreateAppointmentInput): Promise<{ appointment: AppointmentResponse; message: string }> {
     const roomId = input.roomId;
     const scheduledAt = this.toDate(input.scheduledAt);
+    if (this.isScheduledBeforeToday(scheduledAt)) {
+      throw new AppointmentDateInPastError();
+    }
     const customer = await this.repository.findCustomerByUserId(userId);
     if (!customer) {
       throw new CustomerNotFoundError();
@@ -132,6 +168,10 @@ class AppointmentsService {
     const room = await this.repository.findRoomById(roomId);
     if (!room) {
       throw new RoomNotFoundError();
+    }
+    const isWithinRoomHours = this.isScheduledWithinRoomHours(room, scheduledAt);
+    if (!isWithinRoomHours) {
+      throw new AppointmentOutsideRoomHoursError();
     }
     const conflict = await this.repository.findConflict(roomId, scheduledAt);
     if (conflict) {
