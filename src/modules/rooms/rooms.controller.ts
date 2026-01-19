@@ -24,7 +24,7 @@ class RoomsController {
         sort: "asc" | "desc";
         name?: string;
       } = { page, pageSize, sort };
-      if (name !== undefined) {
+      if (name) {
         params.name = name;
       }
       const result = await service.listRooms(params);

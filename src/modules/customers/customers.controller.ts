@@ -42,18 +42,11 @@ class CustomersController {
     const pageSize = req.query.pageSize ? Number(req.query.pageSize) : 10;
     const sortParam = typeof req.query.sort === "string" ? req.query.sort : "";
     const sort = sortParam === "asc" ? "asc" : "desc";
-    const from =
-      typeof req.query.from === "string" && req.query.from.trim()
-        ? req.query.from.trim()
-        : undefined;
-    const to =
-      typeof req.query.to === "string" && req.query.to.trim()
-        ? req.query.to.trim()
-        : undefined;
-    const name =
-      typeof req.query.name === "string" && req.query.name.trim()
-        ? req.query.name.trim()
-        : undefined;
+    const queryData = matchedData(req, { locations: ["query"] }) as {
+      name?: string;
+      from?: string;
+      to?: string;
+    };
     try {
       const params: {
         page: number;
@@ -63,14 +56,14 @@ class CustomersController {
         from?: Date;
         to?: Date;
       } = { page, pageSize, sort };
-      if (name !== undefined) {
-        params.name = name;
+      if (queryData.name) {
+        params.name = queryData.name;
       }
-      if (from) {
-        params.from = toUtcStartOfDayFromAppTz(from);
+      if (queryData.from) {
+        params.from = toUtcStartOfDayFromAppTz(queryData.from);
       }
-      if (to) {
-        params.to = toUtcEndOfDayFromAppTz(to);
+      if (queryData.to) {
+        params.to = toUtcEndOfDayFromAppTz(queryData.to);
       }
       const result = await service.listCustomers(params);
       return res.status(200).json(

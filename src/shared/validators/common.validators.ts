@@ -23,6 +23,6 @@ export const paginationQuery = [
 ];
 
 export const nameFilterQuery = query("name")
-  .optional()
+  .optional({ checkFalsy: true })
   .isString()
   .trim();

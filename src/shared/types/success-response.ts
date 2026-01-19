@@ -13,7 +13,7 @@ export const createSuccessResponse = <T = unknown>(
     message,
   };
 
-  if (data !== undefined) {
+  if (data) {
     response.data = data;
   }
 

@@ -119,7 +119,7 @@ class RoomsService {
     const updates: UpdateRoomParams = {};
     const changes: string[] = [];
 
-    if (input.name !== undefined) {
+    if (input.name) {
       const name = input.name.trim();
       if (name !== current.name) {
         updates.name = name;
@@ -132,7 +132,7 @@ class RoomsService {
     let finalStart = currentStart;
     let finalEnd = currentEnd;
 
-    if (input.startTime !== undefined) {
+    if (input.startTime) {
       const startTime = this.parseTime(input.startTime);
       finalStart = startTime;
       if (startTime.normalized !== current.startTime) {
@@ -143,7 +143,7 @@ class RoomsService {
       }
     }
 
-    if (input.endTime !== undefined) {
+    if (input.endTime) {
       const endTime = this.parseTime(input.endTime);
       finalEnd = endTime;
       if (endTime.normalized !== current.endTime) {
@@ -154,7 +154,7 @@ class RoomsService {
       }
     }
 
-    if (input.slotDurationMinutes !== undefined && input.slotDurationMinutes !== current.slotDurationMinutes) {
+    if (input.slotDurationMinutes && input.slotDurationMinutes !== current.slotDurationMinutes) {
       updates.slotDurationMinutes = input.slotDurationMinutes;
       changes.push(
         `slotDurationMinutes de ${current.slotDurationMinutes} para ${input.slotDurationMinutes}`
@@ -172,7 +172,7 @@ class RoomsService {
 
     const { updates, changes, finalStart, finalEnd } = this.buildRoomUpdates(current, input);
 
-    const shouldValidateRange = input.startTime !== undefined || input.endTime !== undefined;
+    const shouldValidateRange = input.startTime || input.endTime;
     if (shouldValidateRange) {
       this.validateTimeRange(finalStart, finalEnd);
     }

@@ -97,10 +97,10 @@ class AppointmentsService {
     let customer: AppointmentCustomer | undefined;
     if (record.Customer && record.Customer.id) {
       customer = { id: record.Customer.id };
-      if (record.Customer.User?.name !== undefined) {
+      if (record.Customer.User?.name) {
         customer.name = record.Customer.User.name;
       }
-      if (record.Customer.User?.email !== undefined) {
+      if (record.Customer.User?.email) {
         customer.email = record.Customer.User.email;
       }
     }
@@ -147,10 +147,10 @@ class AppointmentsService {
       page: input.page,
       pageSize: input.pageSize,
       sort: input.sort,
-      ...(from !== undefined ? { from } : {}),
-      ...(to !== undefined ? { to } : {}),
-      ...(customerId !== undefined ? { customerId } : {}),
-      ...(input.search !== undefined ? { search: input.search.trim() } : {})
+      ...(from ? { from } : {}),
+      ...(to ? { to } : {}),
+      ...(customerId ? { customerId } : {}),
+      ...(input.search ? { search: input.search.trim() } : {})
     };
   }
 

@@ -8,11 +8,13 @@ export const listCustomersValidator = [
   ...paginationQuery,
   nameFilterQuery,
   query("from")
-    .optional()
+    .optional({ checkFalsy: true })
     .isISO8601()
+    .trim()
     .withMessage("Data inicial deve estar no formato ISO 8601"),
   query("to")
-    .optional()
+    .optional({ checkFalsy: true })
     .isISO8601()
+    .trim()
     .withMessage("Data final deve estar no formato ISO 8601")
 ];

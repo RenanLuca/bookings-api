@@ -53,7 +53,7 @@ class AppointmentsRepository implements IAppointmentsRepository {
 
   private buildWhere(params: ListParams) {
     const where: Record<string, unknown> = {};
-    if (params.customerId !== undefined) {
+    if (params.customerId) {
       where.customerId = params.customerId;
     }
     if (params.from || params.to) {

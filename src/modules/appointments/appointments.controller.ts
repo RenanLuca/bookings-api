@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { matchedData } from "express-validator";
 import { AuthTokenInvalidError } from "../auth/errors/index.js";
 import { AppointmentsFactory } from "./appointments.factory.js";
 import { ResponseHelper } from "../../shared/utils/response.helper.js";
@@ -39,17 +40,19 @@ class AppointmentsController {
     const pageSize = req.query.pageSize ? Number(req.query.pageSize) : 10;
     const sortParam = typeof req.query.sort === "string" ? req.query.sort : "";
     const sort: "asc" | "desc" = sortParam === "asc" ? "asc" : "desc";
-    const from = typeof req.query.from === "string" ? req.query.from : undefined;
-    const to = typeof req.query.to === "string" ? req.query.to : undefined;
-    const search = typeof req.query.search === "string" ? req.query.search : undefined;
+    const queryData = matchedData(req, { locations: ["query"] }) as {
+      from?: string;
+      to?: string;
+      search?: string;
+    };
     try {
       const filters = {
         page,
         pageSize,
         sort,
-        ...(from !== undefined ? { from } : {}),
-        ...(to !== undefined ? { to } : {}),
-        ...(search !== undefined ? { search } : {})
+        ...(queryData.from ? { from: queryData.from } : {}),
+        ...(queryData.to ? { to: queryData.to } : {}),
+        ...(queryData.search ? { search: queryData.search } : {})
       };
       const result = await service.listMyAppointments(
         authUser.userId,
@@ -77,17 +80,19 @@ class AppointmentsController {
     const pageSize = req.query.pageSize ? Number(req.query.pageSize) : 10;
     const sortParam = typeof req.query.sort === "string" ? req.query.sort : "";
     const sort: "asc" | "desc" = sortParam === "asc" ? "asc" : "desc";
-    const from = typeof req.query.from === "string" ? req.query.from : undefined;
-    const to = typeof req.query.to === "string" ? req.query.to : undefined;
-    const search = typeof req.query.search === "string" ? req.query.search : undefined;
+    const queryData = matchedData(req, { locations: ["query"] }) as {
+      from?: string;
+      to?: string;
+      search?: string;
+    };
     try {
       const filters = {
         page,
         pageSize,
         sort,
-        ...(from !== undefined ? { from } : {}),
-        ...(to !== undefined ? { to } : {}),
-        ...(search !== undefined ? { search } : {})
+        ...(queryData.from ? { from: queryData.from } : {}),
+        ...(queryData.to ? { to: queryData.to } : {}),
+        ...(queryData.search ? { search: queryData.search } : {})
       };
       const result = await service.listAll(filters);
       return res.status(200).json(

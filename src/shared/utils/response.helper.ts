@@ -37,11 +37,11 @@ export class ResponseHelper {
       data
     };
 
-    if (message !== undefined) {
+    if (message) {
       response.message = message;
     }
 
-    if (meta !== undefined) {
+    if (meta) {
       response.meta = meta;
     }
 
@@ -66,7 +66,7 @@ export class ResponseHelper {
       meta: { pagination }
     };
 
-    if (message !== undefined) {
+    if (message) {
       response.message = message;
     }
 
@@ -79,7 +79,7 @@ export class ResponseHelper {
       message
     };
 
-    if (code !== undefined) {
+    if (code) {
       response.code = code;
     }
 
