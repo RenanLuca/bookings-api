@@ -1,9 +1,15 @@
 import type { NextFunction, Request, Response } from "express";
+import { matchedData } from "express-validator";
 import { AuthTokenInvalidError } from "../auth/errors/index.js";
 import { CustomersFactory } from "./customers.factory.js";
 import { PermissionsFactory } from "../permissions/permissions.factory.js";
 import { customersMessages } from "./constants/index.js";
 import { ResponseHelper } from "../../shared/utils/response.helper.js";
+import {
+  toUtcEndOfDayFromAppTz,
+  toUtcStartOfDayFromAppTz
+} from "../../shared/utils/datetime.js";
+import type { UserStatus } from "../../models/user.model.js";
 import type { RegisterInput, UpdateProfileInput, CustomerData } from "./dto/index.js";
 import type { ModulePermissionUpdate } from "../permissions/permissions.service.interface.js";
 
@@ -36,6 +42,14 @@ class CustomersController {
     const pageSize = req.query.pageSize ? Number(req.query.pageSize) : 10;
     const sortParam = typeof req.query.sort === "string" ? req.query.sort : "";
     const sort = sortParam === "asc" ? "asc" : "desc";
+    const from =
+      typeof req.query.from === "string" && req.query.from.trim()
+        ? req.query.from.trim()
+        : undefined;
+    const to =
+      typeof req.query.to === "string" && req.query.to.trim()
+        ? req.query.to.trim()
+        : undefined;
     const name =
       typeof req.query.name === "string" && req.query.name.trim()
         ? req.query.name.trim()
@@ -46,9 +60,17 @@ class CustomersController {
         pageSize: number;
         sort: "asc" | "desc";
         name?: string;
+        from?: Date;
+        to?: Date;
       } = { page, pageSize, sort };
       if (name !== undefined) {
         params.name = name;
+      }
+      if (from) {
+        params.from = toUtcStartOfDayFromAppTz(from);
+      }
+      if (to) {
+        params.to = toUtcEndOfDayFromAppTz(to);
       }
       const result = await service.listCustomers(params);
       return res.status(200).json(
@@ -112,50 +134,23 @@ class CustomersController {
     if (!authUser) {
       return next(new AuthTokenInvalidError());
     }
-    const userPayload = req.body?.user ?? {};
-    const customerPayload = req.body?.customer ?? {};
-    const updateUser: { name?: string; email?: string; password?: string } = {};
-    const updateCustomer: Partial<CustomerData> = {};
-
-    if (userPayload.name !== undefined) {
-      updateUser.name = userPayload.name;
-    }
-    if (userPayload.email !== undefined) {
-      updateUser.email = userPayload.email;
-    }
-    if (userPayload.password !== undefined) {
-      updateUser.password = userPayload.password;
-    }
-
-    if (customerPayload.zipCode !== undefined) {
-      updateCustomer.zipCode = customerPayload.zipCode;
-    }
-    if (customerPayload.street !== undefined) {
-      updateCustomer.street = customerPayload.street;
-    }
-    if (customerPayload.number !== undefined) {
-      updateCustomer.number = customerPayload.number;
-    }
-    if (customerPayload.neighborhood !== undefined) {
-      updateCustomer.neighborhood = customerPayload.neighborhood;
-    }
-    if (customerPayload.city !== undefined) {
-      updateCustomer.city = customerPayload.city;
-    }
-    if (customerPayload.state !== undefined) {
-      updateCustomer.state = customerPayload.state;
-    }
-    if (customerPayload.complement !== undefined) {
-      updateCustomer.complement = customerPayload.complement;
-    }
+    const data = matchedData(req, { locations: ["body"] }) as UpdateProfileInput;
 
     try {
       const payload: UpdateProfileInput = {};
-      if (Object.keys(updateUser).length) {
-        payload.user = updateUser;
+      if (data.user && Object.keys(data.user).length) {
+        payload.user = data.user;
       }
-      if (Object.keys(updateCustomer).length) {
-        payload.customer = updateCustomer;
+      const rawCustomer = req.body?.customer ?? {};
+      const customerPayload: Partial<CustomerData> = { ...(data.customer ?? {}) };
+      if (
+        Object.prototype.hasOwnProperty.call(rawCustomer, "complement") &&
+        rawCustomer.complement === null
+      ) {
+        customerPayload.complement = null;
+      }
+      if (Object.keys(customerPayload).length) {
+        payload.customer = customerPayload;
       }
       const result = await service.updateProfile(authUser.userId, payload);
       return res.status(200).json(
@@ -181,6 +176,23 @@ class CustomersController {
       );
       return res.status(200).json(
         ResponseHelper.success({ permissions }, customersMessages.permissions.success)
+      );
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async updateCustomerStatus(req: Request, res: Response, next: NextFunction) {
+    const authUser = req.user;
+    if (!authUser) {
+      return next(new AuthTokenInvalidError());
+    }
+    const customerId = Number(req.params.id);
+    const status: UserStatus = req.body.status;
+    try {
+      const result = await service.updateCustomerStatus(customerId, status);
+      return res.status(200).json(
+        ResponseHelper.success(result.profile, customersMessages.status.success)
       );
     } catch (error) {
       return next(error);

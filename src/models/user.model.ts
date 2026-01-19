@@ -7,7 +7,8 @@ import type {
 import { sequelize } from "../config/sequelize.js";
 
 export type UserRole = "ADMIN" | "CUSTOMER";
-export type UserStatus = "ACTIVE" | "INACTIVE";
+export const USER_STATUSES = ["ACTIVE", "INACTIVE"] as const;
+export type UserStatus = (typeof USER_STATUSES)[number];
 
 export class User
   extends Model<

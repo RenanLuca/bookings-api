@@ -5,4 +5,6 @@ export type FindPaginatedParams = {
   pageSize: number;
   name?: string;
   sort: SortDirection;
+  from?: Date;
+  to?: Date;
 };

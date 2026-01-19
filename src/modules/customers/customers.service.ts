@@ -8,6 +8,7 @@ import {
 } from "./errors/index.js";
 import { customersMessages } from "./constants/index.js";
 import type { ActivityLogModule } from "../../models/activity-log.model.js";
+import type { UserStatus } from "../../models/user.model.js";
 import type { ILogsService } from "../logs/logs.service.interface.js";
 import type { IPermissionsService } from "../permissions/permissions.service.interface.js";
 import type { ICustomersRepository } from "./customers.repository.interface.js";
@@ -265,6 +266,14 @@ class CustomersService {
       throw new UserNotFoundError();
     }
     return { message: customersMessages.delete.success };
+  }
+
+  async updateCustomerStatus(id: number, status: UserStatus): Promise<{ profile: ProfileResult; message: string }> {
+    const profile = await this.repository.updateStatus(id, status);
+    if (!profile) {
+      throw new UserNotFoundError();
+    }
+    return { profile: this.mapProfile(profile), message: customersMessages.status.success };
   }
 }
 

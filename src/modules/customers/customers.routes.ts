@@ -7,7 +7,8 @@ import {
   listCustomersValidator,
   registerCustomerValidator,
   updateMeValidator,
-  updatePermissionsValidator
+  updatePermissionsValidator,
+  updateStatusValidator
 } from "./validators/index.js";
 import { validate } from "../../shared/validators/validate.js";
 import { CustomersController } from "./customers.controller.js";
@@ -76,6 +77,16 @@ router.patch(
   validate,
   (req: Request, res: Response, next: NextFunction) =>
     controller.updatePermissions(req, res, next)
+);
+
+router.patch(
+  "/customers/:id/status",
+  authMiddleware,
+  requireRole(["ADMIN"]),
+  updateStatusValidator,
+  validate,
+  (req: Request, res: Response, next: NextFunction) =>
+    controller.updateCustomerStatus(req, res, next)
 );
 
 export { router as customersRoutes };

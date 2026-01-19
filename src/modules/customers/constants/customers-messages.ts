@@ -23,5 +23,9 @@ export const customersMessages = {
   permissions: {
     success: "Permissões atualizadas com sucesso.",
     error: "Erro ao atualizar permissões."
+  },
+  status: {
+    success: "Status atualizado com sucesso.",
+    error: "Erro ao atualizar status."
   }
 } as const;

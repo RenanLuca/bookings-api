@@ -1,6 +1,7 @@
 import type { FindOptions, Transaction } from "sequelize";
 import { Op } from "sequelize";
 import { Customer, User } from "../../models/index.js";
+import type { UserStatus } from "../../models/user.model.js";
 import type {
   CreateUserWithCustomerParams,
   CustomerData,
@@ -76,11 +77,36 @@ class CustomersRepository implements ICustomersRepository {
     return Customer.update(data, options);
   }
 
+  async updateStatus(id: number, status: UserStatus) {
+    const [updated] = await User.update(
+      { status },
+      { where: { id, role: "CUSTOMER" } }
+    );
+    if (!updated) {
+      return null;
+    }
+    return this.findById(id);
+  }
+
   async findPaginated(params: FindPaginatedParams) {
     const where: Record<string, unknown> = { role: "CUSTOMER" };
     if (params.name) {
       where.name = { [Op.substring]: params.name };
     }
+    const customerWhere: Record<string, unknown> = {};
+    if (params.from || params.to) {
+      const range: { [key: symbol]: Date } = {};
+      if (params.from) {
+        range[Op.gte] = params.from;
+      }
+      if (params.to) {
+        range[Op.lte] = params.to;
+      }
+      customerWhere.createdAt = range;
+    }
+    const include = Object.keys(customerWhere).length
+      ? [{ model: Customer, where: customerWhere, required: true }]
+      : [{ model: Customer }];
     const offset = (params.page - 1) * params.pageSize;
     const orderDirection = params.sort === "asc" ? "ASC" : "DESC";
     const { rows, count } = await User.findAndCountAll({
@@ -89,7 +115,7 @@ class CustomersRepository implements ICustomersRepository {
       offset,
       order: [["createdAt", orderDirection]],
       attributes: { exclude: ["passwordHash"] },
-      include: [{ model: Customer }]
+      include
     });
     return { rows: rows as UserWithCustomer[], count };
   }

@@ -1,6 +1,6 @@
 import type { Transaction } from "sequelize";
 import type { Customer } from "../../models/customer.model.js";
-import type { User } from "../../models/user.model.js";
+import type { User, UserStatus } from "../../models/user.model.js";
 import type {
   CreateUserWithCustomerParams,
   CustomerData,
@@ -20,6 +20,7 @@ interface ICustomersRepository {
   findById(id: number): Promise<UserWithCustomer | null>;
   findByEmail(email: string): Promise<User | null>;
   createUserWithCustomer(data: CreateUserWithCustomerParams, transaction: Transaction): Promise<UserWithCustomer | null>;
+  updateStatus(id: number, status: UserStatus): Promise<UserWithCustomer | null>;
   softDeleteById(id: number): Promise<number>;
 }
 
