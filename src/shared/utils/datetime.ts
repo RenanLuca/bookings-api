@@ -11,7 +11,7 @@ const parseInputDate = (input: string | Date) => {
 };
 
 const toUtcFromAppTz = (input: string | Date) => {
-  return fromZonedTime(input, APP_TIMEZONE);
+  return parseInputDate(input);
 };
 
 const toAppTzFromUtc = (input: string | Date) => {
@@ -24,4 +24,25 @@ const toAppIsoStringFromUtc = (input: string | Date) => {
   return formatInTimeZone(date, APP_TIMEZONE, "yyyy-MM-dd'T'HH:mm:ssXXX");
 };
 
-export { APP_TIMEZONE, toAppIsoStringFromUtc, toAppTzFromUtc, toUtcFromAppTz };
+const toUtcIsoString = (input: string | Date) => {
+  const date = parseInputDate(input);
+  return date.toISOString();
+};
+
+const toUtcStartOfDayFromAppTz = (input: string) => {
+  return fromZonedTime(`${input}T00:00:00`, APP_TIMEZONE);
+};
+
+const toUtcEndOfDayFromAppTz = (input: string) => {
+  return fromZonedTime(`${input}T23:59:59.999`, APP_TIMEZONE);
+};
+
+export {
+  APP_TIMEZONE,
+  toAppIsoStringFromUtc,
+  toAppTzFromUtc,
+  toUtcFromAppTz,
+  toUtcIsoString,
+  toUtcStartOfDayFromAppTz,
+  toUtcEndOfDayFromAppTz
+};

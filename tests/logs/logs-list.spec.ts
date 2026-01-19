@@ -50,7 +50,7 @@ describe("Logs List Endpoints", () => {
       .post("/auth/login")
       .send({ email, password: testPassword });
 
-    return { user, customer, token: loginResponse.body.token as string };
+    return { user, customer, token: loginResponse.body.data.token as string };
   };
 
   const createAdmin = async (email: string) => {
@@ -68,7 +68,7 @@ describe("Logs List Endpoints", () => {
       .post("/auth/login")
       .send({ email, password: testPassword });
 
-    return { user, token: loginResponse.body.token as string };
+    return { user, token: loginResponse.body.data.token as string };
   };
 
   const createLogForUser = async (

@@ -4,7 +4,7 @@ import type {
   InferAttributes,
   InferCreationAttributes
 } from "sequelize";
-import { sequelize } from "../config/db.js";
+import { sequelize } from "../config/sequelize.js";
 import type { PermissionModule } from "../shared/permissions/modules.js";
 
 export class CustomerModulePermission extends Model<

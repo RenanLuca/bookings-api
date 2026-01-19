@@ -69,7 +69,7 @@ describe("Customer Appointments List", () => {
       .post("/auth/login")
       .send({ email, password: testPassword });
 
-    return { user, customer, token: loginResponse.body.token as string };
+    return { user, customer, token: loginResponse.body.data.token as string };
   };
 
   const createAppointmentViaApi = async (
@@ -83,7 +83,7 @@ describe("Customer Appointments List", () => {
       .send({ roomId, scheduledAt });
 
     if (response.status === 201) {
-      createdAppointmentIds.push(response.body.id);
+      createdAppointmentIds.push(response.body.data.id);
     }
     return response;
   };
@@ -156,7 +156,7 @@ describe("Customer Appointments List", () => {
 
       expect(responseA.status).toBe(200);
       expect(responseA.body.data).toHaveLength(0);
-      expect(responseA.body.meta.total).toBe(0);
+      expect(responseA.body.meta.pagination.total).toBe(0);
     });
   });
 
@@ -175,9 +175,9 @@ describe("Customer Appointments List", () => {
 
       expect(response.status).toBe(200);
       expect(response.body.data.length).toBeLessThanOrEqual(2);
-      expect(response.body.meta.page).toBe(1);
-      expect(response.body.meta.pageSize).toBe(2);
-      expect(response.body.meta.total).toBe(3);
+      expect(response.body.meta.pagination.page).toBe(1);
+      expect(response.body.meta.pagination.limit).toBe(2);
+      expect(response.body.meta.pagination.total).toBe(3);
     });
 
     it("should return remaining items on second page", async () => {
@@ -188,8 +188,8 @@ describe("Customer Appointments List", () => {
 
       expect(response.status).toBe(200);
       expect(response.body.data.length).toBe(1);
-      expect(response.body.meta.page).toBe(2);
-      expect(response.body.meta.total).toBe(3);
+      expect(response.body.meta.pagination.page).toBe(2);
+      expect(response.body.meta.pagination.total).toBe(3);
     });
 
     it("should return empty data when page exceeds total", async () => {
@@ -200,7 +200,7 @@ describe("Customer Appointments List", () => {
 
       expect(response.status).toBe(200);
       expect(response.body.data).toHaveLength(0);
-      expect(response.body.meta.total).toBe(3);
+      expect(response.body.meta.pagination.total).toBe(3);
     });
   });
 
@@ -218,8 +218,6 @@ describe("Customer Appointments List", () => {
         .set("Authorization", `Bearer ${customerA.token}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.meta.sort).toBe("asc");
-
       const appointments = response.body.data;
       const scheduledDates = appointments.map((a: any) =>
         new Date(a.scheduledAt).getTime()
@@ -237,8 +235,6 @@ describe("Customer Appointments List", () => {
         .set("Authorization", `Bearer ${customerA.token}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.meta.sort).toBe("desc");
-
       const appointments = response.body.data;
       const scheduledDates = appointments.map((a: any) =>
         new Date(a.scheduledAt).getTime()

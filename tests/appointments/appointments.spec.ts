@@ -65,7 +65,7 @@ describe("Appointments Endpoints", () => {
       .post("/auth/login")
       .send({ email, password: testPassword });
 
-    return { user, customer, token: loginResponse.body.token as string };
+    return { user, customer, token: loginResponse.body.data.token as string };
   };
 
   afterEach(async () => {
@@ -96,7 +96,7 @@ describe("Appointments Endpoints", () => {
   });
 
   describe("POST /appointments - Timezone conversion", () => {
-    it("should save scheduledAt in UTC and return in GMT-3", async () => {
+    it("should save scheduledAt in UTC and return in UTC", async () => {
       const room = await createRoom("Room Timezone Test");
       const customer = await createCustomerWithPermission("customer-tz@test.com");
 
@@ -111,14 +111,14 @@ describe("Appointments Endpoints", () => {
         });
 
       expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty("scheduledAt");
+      expect(response.body.data).toHaveProperty("scheduledAt");
 
-      createdAppointmentIds.push(response.body.id);
+      createdAppointmentIds.push(response.body.data.id);
 
-      const returnedDate = response.body.scheduledAt;
-      expect(returnedDate).toMatch(/2026-01-20T10:00:00-03:00/);
+      const returnedDate = response.body.data.scheduledAt;
+      expect(returnedDate).toBe("2026-01-20T13:00:00.000Z");
 
-      const dbRecord = await Appointment.findByPk(response.body.id);
+      const dbRecord = await Appointment.findByPk(response.body.data.id);
       expect(dbRecord).not.toBeNull();
 
       const dbDate = new Date(dbRecord!.scheduledAt);
@@ -144,7 +144,7 @@ describe("Appointments Endpoints", () => {
         });
 
       expect(firstResponse.status).toBe(201);
-      createdAppointmentIds.push(firstResponse.body.id);
+      createdAppointmentIds.push(firstResponse.body.data.id);
 
       const secondResponse = await request(app)
         .post("/appointments")
@@ -177,7 +177,7 @@ describe("Appointments Endpoints", () => {
         });
 
       expect(responseA.status).toBe(201);
-      createdAppointmentIds.push(responseA.body.id);
+      createdAppointmentIds.push(responseA.body.data.id);
 
       const responseB = await request(app)
         .post("/appointments")
@@ -188,10 +188,10 @@ describe("Appointments Endpoints", () => {
         });
 
       expect(responseB.status).toBe(201);
-      createdAppointmentIds.push(responseB.body.id);
+      createdAppointmentIds.push(responseB.body.data.id);
 
-      expect(responseA.body.roomId).toBe(roomA.id);
-      expect(responseB.body.roomId).toBe(roomB.id);
+      expect(responseA.body.data.roomId).toBe(roomA.id);
+      expect(responseB.body.data.roomId).toBe(roomB.id);
     });
   });
 

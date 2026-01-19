@@ -9,7 +9,12 @@ import {
 import { appointmentsMessages } from "./constants/index.js";
 import type { UserRole } from "../../models/user.model.js";
 import { activityTypes } from "../../shared/constants/log-messages.js";
-import { toAppIsoStringFromUtc, toUtcFromAppTz } from "../../shared/utils/datetime.js";
+import {
+  toUtcFromAppTz,
+  toUtcIsoString,
+  toUtcStartOfDayFromAppTz,
+  toUtcEndOfDayFromAppTz
+} from "../../shared/utils/datetime.js";
 import type { ILogsService } from "../logs/logs.service.interface.js";
 import type { IPermissionsService } from "../permissions/permissions.service.interface.js";
 import type { IAppointmentsRepository } from "./appointments.repository.interface.js";
@@ -51,7 +56,7 @@ class AppointmentsService {
   }
 
   private toAppointmentResponse(record: AppointmentWithRelations): AppointmentResponse {
-    const scheduledAt = toAppIsoStringFromUtc(record.scheduledAt);
+    const scheduledAt = toUtcIsoString(record.scheduledAt);
     const room =
       record.Room && record.Room.id
         ? { id: record.Room.id, name: record.Room.name }
@@ -92,7 +97,7 @@ class AppointmentsService {
   }
 
   private buildLogDescription(prefix: string, record: AppointmentWithRelations) {
-    const dateTime = toAppIsoStringFromUtc(record.scheduledAt);
+    const dateTime = toUtcIsoString(record.scheduledAt);
     const roomName = record.Room?.name ?? `Sala ${record.roomId}`;
     const customerName = record.Customer?.User?.name;
     if (customerName) {
@@ -102,8 +107,8 @@ class AppointmentsService {
   }
 
   private buildQueryFilters(input: ListFiltersInput, customerId?: number): QueryFilters {
-    const from = this.toDateOrUndefined(input.from);
-    const to = this.toDateOrUndefined(input.to);
+    const from = input.from ? toUtcStartOfDayFromAppTz(input.from.trim()) : undefined;
+    const to = input.to ? toUtcEndOfDayFromAppTz(input.to.trim()) : undefined;
 
     return {
       page: input.page,
@@ -111,7 +116,8 @@ class AppointmentsService {
       sort: input.sort,
       ...(from !== undefined ? { from } : {}),
       ...(to !== undefined ? { to } : {}),
-      ...(customerId !== undefined ? { customerId } : {})
+      ...(customerId !== undefined ? { customerId } : {}),
+      ...(input.search !== undefined ? { search: input.search.trim() } : {})
     };
   }
 

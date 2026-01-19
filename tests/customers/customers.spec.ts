@@ -29,7 +29,7 @@ describe("Customers Endpoints", () => {
       .post("/auth/login")
       .send({ email, password: testPassword });
 
-    return { user, token: loginResponse.body.token as string };
+    return { user, token: loginResponse.body.data.token as string };
   };
 
   const createCustomerWithUser = async (
@@ -74,7 +74,7 @@ describe("Customers Endpoints", () => {
       .post("/auth/login")
       .send({ email, password: testPassword });
 
-    return { user, customer, token: loginResponse.body.token as string };
+    return { user, customer, token: loginResponse.body.data.token as string };
   };
 
   afterEach(async () => {
@@ -112,7 +112,7 @@ describe("Customers Endpoints", () => {
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty("data");
       expect(response.body).toHaveProperty("meta");
-      expect(response.body.meta.sort).toBe("asc");
+      expect(response.body.meta).toHaveProperty("pagination");
 
       const names = response.body.data.map(
         (item: { user: { name: string } }) => item.user.name.toLowerCase()
@@ -134,8 +134,6 @@ describe("Customers Endpoints", () => {
         .set("Authorization", `Bearer ${admin.token}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.meta.sort).toBe("desc");
-
       const data = response.body.data;
       if (data.length >= 2) {
         const firstCreatedAt = new Date(data[0].user.createdAt || 0).getTime();
@@ -167,10 +165,10 @@ describe("Customers Endpoints", () => {
         });
 
       expect(response.status).toBe(200);
-      expect(response.body.user.name).toBe("Updated Name");
-      expect(response.body.customer.city).toBe("New City");
-      expect(response.body.customer.state).toBe("New State");
-      expect(response.body.customer.zipCode).toBe("99999-999");
+      expect(response.body.data.user.name).toBe("Updated Name");
+      expect(response.body.data.customer.city).toBe("New City");
+      expect(response.body.data.customer.state).toBe("New State");
+      expect(response.body.data.customer.zipCode).toBe("99999-999");
     });
 
     it("should update email successfully when unique", async () => {
@@ -186,7 +184,7 @@ describe("Customers Endpoints", () => {
         });
 
       expect(response.status).toBe(200);
-      expect(response.body.user.email).toBe("new-unique-email@test.com");
+      expect(response.body.data.user.email).toBe("new-unique-email@test.com");
     });
   });
 

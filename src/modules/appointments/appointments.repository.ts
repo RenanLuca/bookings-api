@@ -69,6 +69,35 @@ class AppointmentsRepository implements IAppointmentsRepository {
     return where;
   }
 
+  private buildInclude(params: ListParams) {
+    if (params.search) {
+      return [
+        { model: Room },
+        {
+          model: Customer,
+          required: true,
+          include: [
+            {
+              model: User,
+              attributes: ["name", "email"],
+              where: {
+                name: { [Op.like]: `%${params.search}%` }
+              },
+              required: true
+            }
+          ]
+        }
+      ];
+    }
+    return [
+      { model: Room },
+      {
+        model: Customer,
+        include: [{ model: User, attributes: ["name", "email"] }]
+      }
+    ];
+  }
+
   private buildOrder(sort: SortDirection): OrderItem[] {
     const direction = sort === "asc" ? "ASC" : "DESC";
     return [["scheduledAt", direction]];
@@ -78,15 +107,14 @@ class AppointmentsRepository implements IAppointmentsRepository {
     const offset = (params.page - 1) * params.pageSize;
     const where = this.buildWhere(params);
     const order = this.buildOrder(params.sort);
+    const include = this.buildInclude(params);
     const options: FindAndCountOptions = {
       where,
       limit: params.pageSize,
       offset,
       order,
-      include: [
-        { model: Room },
-        { model: Customer, include: [{ model: User, attributes: ["name", "email"] }] }
-      ]
+      include,
+      distinct: true
     };
     return Appointment.findAndCountAll(options);
   }

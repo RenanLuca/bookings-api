@@ -36,7 +36,8 @@ describe("POST /auth/check-email", () => {
         .send({ email: "nonexistent@test.com" });
 
       expect(response.status).toBe(200);
-      expect(response.body).toEqual({
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toEqual({
         exists: false,
         canLogin: false
       });
@@ -50,7 +51,8 @@ describe("POST /auth/check-email", () => {
         .send({ email: "active-user@test.com" });
 
       expect(response.status).toBe(200);
-      expect(response.body).toEqual({
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toEqual({
         exists: true,
         canLogin: true
       });
@@ -64,7 +66,8 @@ describe("POST /auth/check-email", () => {
         .send({ email: "inactive-user@test.com" });
 
       expect(response.status).toBe(200);
-      expect(response.body).toEqual({
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toEqual({
         exists: true,
         canLogin: false
       });
@@ -78,6 +81,7 @@ describe("POST /auth/check-email", () => {
         .send({ email: "" });
 
       expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
       expect(response.body).toHaveProperty("code", "VALIDATION_ERROR");
     });
 
@@ -87,6 +91,7 @@ describe("POST /auth/check-email", () => {
         .send({});
 
       expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
       expect(response.body).toHaveProperty("code", "VALIDATION_ERROR");
     });
 
@@ -96,6 +101,7 @@ describe("POST /auth/check-email", () => {
         .send({ email: "invalid-email" });
 
       expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
       expect(response.body).toHaveProperty("code", "VALIDATION_ERROR");
     });
 
@@ -105,6 +111,7 @@ describe("POST /auth/check-email", () => {
         .send({ email: "test@" });
 
       expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
       expect(response.body).toHaveProperty("code", "VALIDATION_ERROR");
     });
   });

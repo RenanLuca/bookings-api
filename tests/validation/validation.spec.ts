@@ -29,7 +29,7 @@ describe("Validation Middleware - 400 responses", () => {
       .post("/auth/login")
       .send({ email, password: testPassword });
 
-    return { user, token: loginResponse.body.token as string };
+    return { user, token: loginResponse.body.data.token as string };
   };
 
   const createCustomerWithUser = async (email: string) => {
@@ -65,7 +65,7 @@ describe("Validation Middleware - 400 responses", () => {
       .post("/auth/login")
       .send({ email, password: testPassword });
 
-    return { user, customer, token: loginResponse.body.token as string };
+    return { user, customer, token: loginResponse.body.data.token as string };
   };
 
   afterEach(async () => {

@@ -35,12 +35,13 @@ describe("POST /auth/login", () => {
       .send({ email: testEmail, password: testPassword });
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty("token");
-    expect(typeof response.body.token).toBe("string");
-    expect(response.body).toHaveProperty("user");
-    expect(response.body.user).toHaveProperty("id");
-    expect(response.body.user).toHaveProperty("email", testEmail);
-    expect(response.body.user).toHaveProperty("role");
+    expect(response.body).toHaveProperty("data");
+    expect(response.body.data).toHaveProperty("token");
+    expect(typeof response.body.data.token).toBe("string");
+    expect(response.body.data).toHaveProperty("user");
+    expect(response.body.data.user).toHaveProperty("id");
+    expect(response.body.data.user).toHaveProperty("email", testEmail);
+    expect(response.body.data.user).toHaveProperty("role");
   });
 
   it("should return 401 when password is invalid", async () => {

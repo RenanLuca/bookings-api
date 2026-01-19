@@ -9,11 +9,18 @@ describe("Rooms Validation", () => {
   const createdUserIds: number[] = [];
   const createdRoomIds: number[] = [];
 
+  const createUniqueEmail = (email: string) => {
+    const [localPart, domain] = email.split("@");
+    const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    return domain ? `${localPart}+${suffix}@${domain}` : `${email}-${suffix}`;
+  };
+
   const createAdmin = async (email: string) => {
+    const uniqueEmail = createUniqueEmail(email);
     const passwordHash = bcrypt.hashSync(testPassword, 10);
     const user = await User.create({
       name: "Admin User",
-      email,
+      email: uniqueEmail,
       passwordHash,
       role: "ADMIN",
       status: "ACTIVE"
@@ -22,9 +29,9 @@ describe("Rooms Validation", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email, password: testPassword });
+      .send({ email: uniqueEmail, password: testPassword });
 
-    return { user, token: loginResponse.body.token as string };
+    return { user, token: loginResponse.body.data.token as string };
   };
 
   afterEach(async () => {
@@ -197,10 +204,10 @@ describe("Rooms Validation", () => {
         });
 
       expect(createResponse.status).toBe(201);
-      createdRoomIds.push(createResponse.body.id);
+      createdRoomIds.push(createResponse.body.data.id);
 
       const updateResponse = await request(app)
-        .patch(`/rooms/${createResponse.body.id}`)
+        .patch(`/rooms/${createResponse.body.data.id}`)
         .set("Authorization", `Bearer ${admin.token}`)
         .send({
           startTime: "20:00"
@@ -224,10 +231,10 @@ describe("Rooms Validation", () => {
         });
 
       expect(createResponse.status).toBe(201);
-      createdRoomIds.push(createResponse.body.id);
+      createdRoomIds.push(createResponse.body.data.id);
 
       const updateResponse = await request(app)
-        .patch(`/rooms/${createResponse.body.id}`)
+        .patch(`/rooms/${createResponse.body.data.id}`)
         .set("Authorization", `Bearer ${admin.token}`)
         .send({
           endTime: "07:00"

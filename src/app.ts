@@ -1,6 +1,6 @@
 import express, { type NextFunction, type Request, type Response } from "express";
 import cors from "cors";
-import { sequelize } from "./config/db.js";
+import { sequelize } from "./config/sequelize.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import { appointmentsRoutes } from "./modules/appointments/appointments.routes.js";
 import { customersRoutes } from "./modules/customers/customers.routes.js";

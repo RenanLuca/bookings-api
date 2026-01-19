@@ -63,7 +63,7 @@ describe("JWT Expiration", () => {
       .send({ email: testEmail, password: testPassword });
 
     expect(loginResponse.status).toBe(200);
-    const validToken = loginResponse.body.token;
+    const validToken = loginResponse.body.data.token;
 
     const expiredPayload = {
       userId: createdUserId,
@@ -88,7 +88,7 @@ describe("JWT Expiration", () => {
       .send({ email: testEmail, password: testPassword });
 
     expect(loginResponse.status).toBe(200);
-    const validToken = loginResponse.body.token;
+    const validToken = loginResponse.body.data.token;
 
     const response = await request(app)
       .get("/logs/me")

@@ -52,7 +52,7 @@ describe("Customer Module Permissions", () => {
       .post("/auth/login")
       .send({ email: testEmail, password: testPassword });
 
-    authToken = loginResponse.body.token;
+    authToken = loginResponse.body.data.token;
   };
 
   afterEach(async () => {

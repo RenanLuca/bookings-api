@@ -66,7 +66,7 @@ describe("Multiple Tokens and Selective Logout", () => {
       .post("/auth/login")
       .send({ email: user.email, password: testPassword });
     expect(loginA.status).toBe(200);
-    const tokenA = loginA.body.token;
+    const tokenA = loginA.body.data.token;
 
     await delay(1100);
 
@@ -74,7 +74,7 @@ describe("Multiple Tokens and Selective Logout", () => {
       .post("/auth/login")
       .send({ email: user.email, password: testPassword });
     expect(loginB.status).toBe(200);
-    const tokenB = loginB.body.token;
+    const tokenB = loginB.body.data.token;
 
     expect(tokenA).not.toBe(tokenB);
 
@@ -96,7 +96,7 @@ describe("Multiple Tokens and Selective Logout", () => {
       .post("/auth/login")
       .send({ email: user.email, password: testPassword });
     expect(loginA.status).toBe(200);
-    const tokenA = loginA.body.token;
+    const tokenA = loginA.body.data.token;
 
     await delay(1100);
 
@@ -104,12 +104,13 @@ describe("Multiple Tokens and Selective Logout", () => {
       .post("/auth/login")
       .send({ email: user.email, password: testPassword });
     expect(loginB.status).toBe(200);
-    const tokenB = loginB.body.token;
+    const tokenB = loginB.body.data.token;
 
     const logoutResponse = await request(app)
       .post("/auth/logout")
       .set("Authorization", `Bearer ${tokenA}`);
-    expect(logoutResponse.status).toBe(204);
+    expect(logoutResponse.status).toBe(200);
+    expect(logoutResponse.body.success).toBe(true);
 
     const responseWithRevokedToken = await request(app)
       .get("/logs/me")
@@ -130,12 +131,13 @@ describe("Multiple Tokens and Selective Logout", () => {
       .post("/auth/login")
       .send({ email: user.email, password: testPassword });
     expect(loginResponse.status).toBe(200);
-    const token = loginResponse.body.token;
+    const token = loginResponse.body.data.token;
 
     const firstLogout = await request(app)
       .post("/auth/logout")
       .set("Authorization", `Bearer ${token}`);
-    expect(firstLogout.status).toBe(204);
+    expect(firstLogout.status).toBe(200);
+    expect(firstLogout.body.success).toBe(true);
 
     const secondLogout = await request(app)
       .post("/auth/logout")

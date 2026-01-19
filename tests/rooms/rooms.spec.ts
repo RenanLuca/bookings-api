@@ -24,7 +24,7 @@ describe("Rooms Endpoints", () => {
       .post("/auth/login")
       .send({ email, password: testPassword });
 
-    return { user, token: loginResponse.body.token as string };
+    return { user, token: loginResponse.body.data.token as string };
   };
 
   const createCustomer = async (email: string) => {
@@ -42,7 +42,7 @@ describe("Rooms Endpoints", () => {
       .post("/auth/login")
       .send({ email, password: testPassword });
 
-    return { user, token: loginResponse.body.token as string };
+    return { user, token: loginResponse.body.data.token as string };
   };
 
   const createRoom = async (data: {
@@ -84,13 +84,14 @@ describe("Rooms Endpoints", () => {
         });
 
       expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty("id");
-      expect(response.body.name).toBe("Sala de Reunião A");
-      expect(response.body.startTime).toBe("08:00:00");
-      expect(response.body.endTime).toBe("18:00:00");
-      expect(response.body.slotDurationMinutes).toBe(30);
+      expect(response.body).toHaveProperty("data");
+      expect(response.body.data).toHaveProperty("id");
+      expect(response.body.data.name).toBe("Sala de Reunião A");
+      expect(response.body.data.startTime).toBe("08:00:00");
+      expect(response.body.data.endTime).toBe("18:00:00");
+      expect(response.body.data.slotDurationMinutes).toBe(30);
 
-      createdRoomIds.push(response.body.id);
+      createdRoomIds.push(response.body.data.id);
     });
   });
 
@@ -230,7 +231,7 @@ describe("Rooms Endpoints", () => {
         });
 
       expect(response.status).toBe(200);
-      expect(response.body.name).toBe("Sala Atualizada");
+      expect(response.body.data.name).toBe("Sala Atualizada");
     });
 
     it("should update room times successfully", async () => {
@@ -253,9 +254,9 @@ describe("Rooms Endpoints", () => {
         });
 
       expect(response.status).toBe(200);
-      expect(response.body.startTime).toBe("09:00:00");
-      expect(response.body.endTime).toBe("17:00:00");
-      expect(response.body.slotDurationMinutes).toBe(45);
+      expect(response.body.data.startTime).toBe("09:00:00");
+      expect(response.body.data.endTime).toBe("17:00:00");
+      expect(response.body.data.slotDurationMinutes).toBe(45);
     });
   });
 
@@ -274,7 +275,8 @@ describe("Rooms Endpoints", () => {
         .delete(`/rooms/${room.id}`)
         .set("Authorization", `Bearer ${admin.token}`);
 
-      expect(deleteResponse.status).toBe(204);
+      expect(deleteResponse.status).toBe(200);
+      expect(deleteResponse.body.success).toBe(true);
 
       const listResponse = await request(app)
         .get("/rooms")

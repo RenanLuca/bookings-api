@@ -4,4 +4,5 @@ export type ListFiltersInput = {
   sort: "asc" | "desc";
   from?: string;
   to?: string;
+  search?: string;
 };

@@ -49,7 +49,7 @@ describe("Admin Appointment Decisions", () => {
       .post("/auth/login")
       .send({ email, password: testPassword });
 
-    return { user, token: loginResponse.body.token as string };
+    return { user, token: loginResponse.body.data.token as string };
   };
 
   const createCustomerWithPermission = async (email: string) => {
@@ -85,7 +85,7 @@ describe("Admin Appointment Decisions", () => {
       .post("/auth/login")
       .send({ email, password: testPassword });
 
-    return { user, customer, token: loginResponse.body.token as string };
+    return { user, customer, token: loginResponse.body.data.token as string };
   };
 
   const createAppointmentViaApi = async (
@@ -98,8 +98,8 @@ describe("Admin Appointment Decisions", () => {
       .set("Authorization", `Bearer ${token}`)
       .send({ roomId, scheduledAt });
 
-    if (response.body.id) {
-      createdAppointmentIds.push(response.body.id);
+    if (response.body.data?.id) {
+      createdAppointmentIds.push(response.body.data.id);
     }
     return response;
   };
@@ -149,10 +149,10 @@ describe("Admin Appointment Decisions", () => {
       const response = await createAppointmentViaApi(customerToken, room.id, scheduledAt);
 
       expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty("id");
-      expect(response.body.status).toBe("PENDING");
+      expect(response.body.data).toHaveProperty("id");
+      expect(response.body.data.status).toBe("PENDING");
 
-      const dbRecord = await Appointment.findByPk(response.body.id);
+      const dbRecord = await Appointment.findByPk(response.body.data.id);
       expect(dbRecord).not.toBeNull();
       expect(dbRecord!.status).toBe("PENDING");
     });
@@ -162,14 +162,14 @@ describe("Admin Appointment Decisions", () => {
     it("should change status from PENDING to SCHEDULED", async () => {
       const scheduledAt = "2026-02-16T10:00:00";
       const createResponse = await createAppointmentViaApi(customerToken, room.id, scheduledAt);
-      const appointmentId = createResponse.body.id;
+      const appointmentId = createResponse.body.data.id;
 
       const acceptResponse = await request(app)
         .patch(`/appointments/${appointmentId}/accept`)
         .set("Authorization", `Bearer ${adminToken}`);
 
       expect(acceptResponse.status).toBe(200);
-      expect(acceptResponse.body.status).toBe("SCHEDULED");
+      expect(acceptResponse.body.data.status).toBe("SCHEDULED");
 
       const dbRecord = await Appointment.findByPk(appointmentId);
       expect(dbRecord!.status).toBe("SCHEDULED");
@@ -180,14 +180,14 @@ describe("Admin Appointment Decisions", () => {
     it("should cancel appointment when status is PENDING", async () => {
       const scheduledAt = "2026-02-17T10:00:00";
       const createResponse = await createAppointmentViaApi(customerToken, room.id, scheduledAt);
-      const appointmentId = createResponse.body.id;
+      const appointmentId = createResponse.body.data.id;
 
       const cancelResponse = await request(app)
         .patch(`/appointments/${appointmentId}/cancel`)
         .set("Authorization", `Bearer ${adminToken}`);
 
       expect(cancelResponse.status).toBe(200);
-      expect(cancelResponse.body.status).toBe("CANCELED");
+      expect(cancelResponse.body.data.status).toBe("CANCELED");
 
       const dbRecord = await Appointment.findByPk(appointmentId);
       expect(dbRecord!.status).toBe("CANCELED");
@@ -198,7 +198,7 @@ describe("Admin Appointment Decisions", () => {
     it("should allow canceling appointment with SCHEDULED status", async () => {
       const scheduledAt = "2026-02-18T10:00:00";
       const createResponse = await createAppointmentViaApi(customerToken, room.id, scheduledAt);
-      const appointmentId = createResponse.body.id;
+      const appointmentId = createResponse.body.data.id;
 
       await request(app)
         .patch(`/appointments/${appointmentId}/accept`)
@@ -209,7 +209,7 @@ describe("Admin Appointment Decisions", () => {
         .set("Authorization", `Bearer ${adminToken}`);
 
       expect(cancelResponse.status).toBe(200);
-      expect(cancelResponse.body.status).toBe("CANCELED");
+      expect(cancelResponse.body.data.status).toBe("CANCELED");
 
       const dbRecord = await Appointment.findByPk(appointmentId);
       expect(dbRecord!.status).toBe("CANCELED");
@@ -220,7 +220,7 @@ describe("Admin Appointment Decisions", () => {
     it("should return 403 when customer tries to accept appointment", async () => {
       const scheduledAt = "2026-02-19T10:00:00";
       const createResponse = await createAppointmentViaApi(customerToken, room.id, scheduledAt);
-      const appointmentId = createResponse.body.id;
+      const appointmentId = createResponse.body.data.id;
 
       const acceptResponse = await request(app)
         .patch(`/appointments/${appointmentId}/accept`)
@@ -233,20 +233,20 @@ describe("Admin Appointment Decisions", () => {
     it("should allow customer to cancel own appointment", async () => {
       const scheduledAt = "2026-02-20T10:00:00";
       const createResponse = await createAppointmentViaApi(customerToken, room.id, scheduledAt);
-      const appointmentId = createResponse.body.id;
+      const appointmentId = createResponse.body.data.id;
 
       const cancelResponse = await request(app)
         .patch(`/appointments/${appointmentId}/cancel`)
         .set("Authorization", `Bearer ${customerToken}`);
 
       expect(cancelResponse.status).toBe(200);
-      expect(cancelResponse.body.status).toBe("CANCELED");
+      expect(cancelResponse.body.data.status).toBe("CANCELED");
     });
 
     it("should return 403 when customer tries to cancel another customer appointment", async () => {
       const scheduledAt = "2026-02-20T11:00:00";
       const createResponse = await createAppointmentViaApi(customerToken, room.id, scheduledAt);
-      const appointmentId = createResponse.body.id;
+      const appointmentId = createResponse.body.data.id;
 
       const otherCustomer = await createCustomerWithPermission("other-customer@test.com");
 
@@ -263,7 +263,7 @@ describe("Admin Appointment Decisions", () => {
     it("should return 400 when trying to accept already scheduled appointment", async () => {
       const scheduledAt = "2026-02-21T10:00:00";
       const createResponse = await createAppointmentViaApi(customerToken, room.id, scheduledAt);
-      const appointmentId = createResponse.body.id;
+      const appointmentId = createResponse.body.data.id;
 
       await request(app)
         .patch(`/appointments/${appointmentId}/accept`)
@@ -280,7 +280,7 @@ describe("Admin Appointment Decisions", () => {
     it("should return 400 when trying to accept canceled appointment", async () => {
       const scheduledAt = "2026-02-22T10:00:00";
       const createResponse = await createAppointmentViaApi(customerToken, room.id, scheduledAt);
-      const appointmentId = createResponse.body.id;
+      const appointmentId = createResponse.body.data.id;
 
       await request(app)
         .patch(`/appointments/${appointmentId}/cancel`)
@@ -297,7 +297,7 @@ describe("Admin Appointment Decisions", () => {
     it("should return 400 when trying to cancel already canceled appointment", async () => {
       const scheduledAt = "2026-02-23T10:00:00";
       const createResponse = await createAppointmentViaApi(customerToken, room.id, scheduledAt);
-      const appointmentId = createResponse.body.id;
+      const appointmentId = createResponse.body.data.id;
 
       await request(app)
         .patch(`/appointments/${appointmentId}/cancel`)

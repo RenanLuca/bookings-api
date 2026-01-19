@@ -5,4 +5,5 @@ export type QueryFilters = {
   from?: Date;
   to?: Date;
   customerId?: number;
+  search?: string;
 };

@@ -4,7 +4,7 @@ import type {
   InferAttributes,
   InferCreationAttributes
 } from "sequelize";
-import { sequelize } from "../config/db.js";
+import { sequelize } from "../config/sequelize.js";
 
 export type UserRole = "ADMIN" | "CUSTOMER";
 export type UserStatus = "ACTIVE" | "INACTIVE";

@@ -41,13 +41,15 @@ class AppointmentsController {
     const sort: "asc" | "desc" = sortParam === "asc" ? "asc" : "desc";
     const from = typeof req.query.from === "string" ? req.query.from : undefined;
     const to = typeof req.query.to === "string" ? req.query.to : undefined;
+    const search = typeof req.query.search === "string" ? req.query.search : undefined;
     try {
       const filters = {
         page,
         pageSize,
         sort,
         ...(from !== undefined ? { from } : {}),
-        ...(to !== undefined ? { to } : {})
+        ...(to !== undefined ? { to } : {}),
+        ...(search !== undefined ? { search } : {})
       };
       const result = await service.listMyAppointments(
         authUser.userId,
@@ -77,13 +79,15 @@ class AppointmentsController {
     const sort: "asc" | "desc" = sortParam === "asc" ? "asc" : "desc";
     const from = typeof req.query.from === "string" ? req.query.from : undefined;
     const to = typeof req.query.to === "string" ? req.query.to : undefined;
+    const search = typeof req.query.search === "string" ? req.query.search : undefined;
     try {
       const filters = {
         page,
         pageSize,
         sort,
         ...(from !== undefined ? { from } : {}),
-        ...(to !== undefined ? { to } : {})
+        ...(to !== undefined ? { to } : {}),
+        ...(search !== undefined ? { search } : {})
       };
       const result = await service.listAll(filters);
       return res.status(200).json(

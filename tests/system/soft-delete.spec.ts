@@ -33,7 +33,7 @@ describe("Soft Delete Behavior", () => {
       .post("/auth/login")
       .send({ email, password: testPassword });
 
-    return { user, token: loginResponse.body.token as string };
+    return { user, token: loginResponse.body.data.token as string };
   };
 
   const createCustomerWithPermission = async (email: string) => {
@@ -69,7 +69,7 @@ describe("Soft Delete Behavior", () => {
       .post("/auth/login")
       .send({ email, password: testPassword });
 
-    return { user, customer, token: loginResponse.body.token as string };
+    return { user, customer, token: loginResponse.body.data.token as string };
   };
 
   afterEach(async () => {
@@ -114,7 +114,7 @@ describe("Soft Delete Behavior", () => {
         });
 
       expect(createResponse.status).toBe(201);
-      const roomId = createResponse.body.id;
+      const roomId = createResponse.body.data.id;
       createdRoomIds.push(roomId);
 
       const listBeforeDelete = await request(app)
@@ -132,7 +132,8 @@ describe("Soft Delete Behavior", () => {
         .delete(`/rooms/${roomId}`)
         .set("Authorization", `Bearer ${admin.token}`);
 
-      expect(deleteResponse.status).toBe(204);
+      expect(deleteResponse.status).toBe(200);
+      expect(deleteResponse.body.success).toBe(true);
 
       const listAfterDelete = await request(app)
         .get("/rooms")
@@ -163,7 +164,7 @@ describe("Soft Delete Behavior", () => {
           slotDurationMinutes: 60
         });
 
-      const roomId = createRoomResponse.body.id;
+      const roomId = createRoomResponse.body.data.id;
       createdRoomIds.push(roomId);
 
       const scheduledAt = "2026-03-15T10:00:00";
@@ -174,14 +175,14 @@ describe("Soft Delete Behavior", () => {
         .send({ roomId, scheduledAt });
 
       expect(firstAppointment.status).toBe(201);
-      createdAppointmentIds.push(firstAppointment.body.id);
+      createdAppointmentIds.push(firstAppointment.body.data.id);
 
       const cancelResponse = await request(app)
-        .patch(`/appointments/${firstAppointment.body.id}/cancel`)
+        .patch(`/appointments/${firstAppointment.body.data.id}/cancel`)
         .set("Authorization", `Bearer ${admin.token}`);
 
       expect(cancelResponse.status).toBe(200);
-      expect(cancelResponse.body.status).toBe("CANCELED");
+      expect(cancelResponse.body.data.status).toBe("CANCELED");
 
       const secondAppointment = await request(app)
         .post("/appointments")
@@ -192,7 +193,7 @@ describe("Soft Delete Behavior", () => {
         
       }
       expect(secondAppointment.status).toBe(201);
-      createdAppointmentIds.push(secondAppointment.body.id);
+      createdAppointmentIds.push(secondAppointment.body.data.id);
     });
   });
 });

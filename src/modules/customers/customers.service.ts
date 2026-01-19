@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { UniqueConstraintError } from "sequelize";
-import { sequelize } from "../../config/db.js";
+import { sequelize } from "../../config/sequelize.js";
 import { activityTypes } from "../../shared/constants/log-messages.js";
 import {
   UserNotFoundError,

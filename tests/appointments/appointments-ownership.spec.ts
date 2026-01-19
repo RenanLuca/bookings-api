@@ -24,6 +24,12 @@ describe("Appointments Ownership", () => {
   let admin: { user: User; token: string };
   let appointmentIdA: number;
 
+  const createUniqueEmail = (email: string) => {
+    const [localPart, domain] = email.split("@");
+    const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    return domain ? `${localPart}+${suffix}@${domain}` : `${email}-${suffix}`;
+  };
+
   const createRoom = async (name: string) => {
     const created = await Room.create({
       name,
@@ -36,10 +42,11 @@ describe("Appointments Ownership", () => {
   };
 
   const createAdmin = async (email: string) => {
+    const uniqueEmail = createUniqueEmail(email);
     const passwordHash = bcrypt.hashSync(testPassword, 10);
     const user = await User.create({
       name: "Admin User",
-      email,
+      email: uniqueEmail,
       passwordHash,
       role: "ADMIN",
       status: "ACTIVE"
@@ -48,16 +55,17 @@ describe("Appointments Ownership", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email, password: testPassword });
+      .send({ email: uniqueEmail, password: testPassword });
 
-    return { user, token: loginResponse.body.token as string };
+    return { user, token: loginResponse.body.data.token as string };
   };
 
   const createCustomerWithPermission = async (email: string, name: string) => {
+    const uniqueEmail = createUniqueEmail(email);
     const passwordHash = bcrypt.hashSync(testPassword, 10);
     const user = await User.create({
       name,
-      email,
+      email: uniqueEmail,
       passwordHash,
       role: "CUSTOMER",
       status: "ACTIVE"
@@ -84,9 +92,9 @@ describe("Appointments Ownership", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email, password: testPassword });
+      .send({ email: uniqueEmail, password: testPassword });
 
-    return { user, customer, token: loginResponse.body.token as string };
+    return { user, customer, token: loginResponse.body.data.token as string };
   };
 
   const createAppointmentViaApi = async (
@@ -100,7 +108,7 @@ describe("Appointments Ownership", () => {
       .send({ roomId, scheduledAt });
 
     if (response.status === 201) {
-      createdAppointmentIds.push(response.body.id);
+      createdAppointmentIds.push(response.body.data.id);
     }
     return response;
   };
@@ -122,7 +130,7 @@ describe("Appointments Ownership", () => {
       room.id,
       "2026-03-15T10:00:00"
     );
-    appointmentIdA = appointmentResponse.body.id;
+    appointmentIdA = appointmentResponse.body.data.id;
   });
 
   afterEach(async () => {
@@ -205,8 +213,8 @@ describe("Appointments Ownership", () => {
         .set("Authorization", `Bearer ${customerA.token}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.status).toBe("CANCELED");
-      expect(response.body.id).toBe(appointmentIdA);
+      expect(response.body.data.status).toBe("CANCELED");
+      expect(response.body.data.id).toBe(appointmentIdA);
 
       const dbRecord = await Appointment.findByPk(appointmentIdA);
       expect(dbRecord!.status).toBe("CANCELED");
@@ -222,7 +230,7 @@ describe("Appointments Ownership", () => {
         .set("Authorization", `Bearer ${customerA.token}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.status).toBe("CANCELED");
+      expect(response.body.data.status).toBe("CANCELED");
 
       const dbRecord = await Appointment.findByPk(appointmentIdA);
       expect(dbRecord!.status).toBe("CANCELED");
@@ -265,7 +273,7 @@ describe("Appointments Ownership", () => {
       );
 
       expect(response.status).toBe(201);
-      expect(response.body.customerId).toBe(customerA.customer.id);
+      expect(response.body.data.customerId).toBe(customerA.customer.id);
     });
   });
 
@@ -276,8 +284,8 @@ describe("Appointments Ownership", () => {
         .set("Authorization", `Bearer ${admin.token}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.status).toBe("SCHEDULED");
-      expect(response.body.id).toBe(appointmentIdA);
+      expect(response.body.data.status).toBe("SCHEDULED");
+      expect(response.body.data.id).toBe(appointmentIdA);
 
       const dbRecord = await Appointment.findByPk(appointmentIdA);
       expect(dbRecord!.status).toBe("SCHEDULED");
@@ -289,8 +297,8 @@ describe("Appointments Ownership", () => {
         .set("Authorization", `Bearer ${admin.token}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.status).toBe("CANCELED");
-      expect(response.body.id).toBe(appointmentIdA);
+      expect(response.body.data.status).toBe("CANCELED");
+      expect(response.body.data.id).toBe(appointmentIdA);
 
       const dbRecord = await Appointment.findByPk(appointmentIdA);
       expect(dbRecord!.status).toBe("CANCELED");
@@ -306,7 +314,7 @@ describe("Appointments Ownership", () => {
         .set("Authorization", `Bearer ${admin.token}`);
 
       expect(cancelResponse.status).toBe(200);
-      expect(cancelResponse.body.status).toBe("CANCELED");
+      expect(cancelResponse.body.data.status).toBe("CANCELED");
 
       const dbRecord = await Appointment.findByPk(appointmentIdA);
       expect(dbRecord!.status).toBe("CANCELED");
@@ -327,7 +335,7 @@ describe("Appointments Ownership", () => {
 
       const appointmentIds = response.body.data.map((a: { id: number }) => a.id);
       expect(appointmentIds).toContain(appointmentIdA);
-      expect(appointmentIds).toContain(customerBAppointment.body.id);
+      expect(appointmentIds).toContain(customerBAppointment.body.data.id);
     });
   });
 

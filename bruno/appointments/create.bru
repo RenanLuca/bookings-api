@@ -1,12 +1,17 @@
 meta {
   name: Criar Agendamento
-  type: "http"
+  type: http
+  seq: 1
 }
 
 post {
   url: {{baseUrl}}/appointments
   body: json
   auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
 }
 
 body:json {
@@ -16,14 +21,14 @@ body:json {
   }
 }
 
-auth:bearer {
-  token: {{token}}
+vars:pre-request {
+  baseUrl: http:localhost:3000
 }
 
 docs {
   # Criar Agendamento
   Cria um agendamento para uma sala em um horário disponível. Requer token de cliente.
-
+  
   ## Exemplo de requisição
   ```json
   {
@@ -31,7 +36,7 @@ docs {
     "scheduledAt": "2026-01-15T10:00:00-03:00"
   }
   ```
-
+  
   ## Exemplo de resposta (201)
   ```json
   {
@@ -55,7 +60,7 @@ docs {
     }
   }
   ```
-
+  
   ## Status codes
   - 201 Criado
   - 400 Erro de validação

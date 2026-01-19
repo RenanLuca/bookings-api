@@ -4,4 +4,5 @@ import type { DateRangeFilter } from "./date-range-filter.dto.js";
 export type ListParams = Pagination &
   DateRangeFilter & {
     customerId?: number;
+    search?: string;
   };

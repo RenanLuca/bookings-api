@@ -27,6 +27,16 @@ const buildLegacyFromUtc = (date) => {
 
 module.exports = {
   async up(queryInterface) {
+    const hasScheduledDate = await hasColumn(
+      queryInterface,
+      "appointments",
+      "scheduledDate"
+    );
+    
+    if (!hasScheduledDate) {
+      return;
+    }
+
     const hasScheduledAt = await hasColumn(
       queryInterface,
       "appointments",
@@ -70,28 +80,18 @@ module.exports = {
       // índice antigo pode não existir em bancos vazios
     }
 
-    await queryInterface.addIndex("appointments", {
-      unique: true,
-      fields: ["roomId", "scheduledAt"],
-      name: "appointments_room_scheduled_at_unique"
-    });
+    try {
+      await queryInterface.addIndex("appointments", {
+        unique: true,
+        fields: ["roomId", "scheduledAt"],
+        name: "appointments_room_scheduled_at_unique"
+      });
+    } catch (error) {
+      // índice pode já existir
+    }
 
-    const hasScheduledDate = await hasColumn(
-      queryInterface,
-      "appointments",
-      "scheduledDate"
-    );
-    if (hasScheduledDate) {
-      await queryInterface.removeColumn("appointments", "scheduledDate");
-    }
-    const hasScheduledTime = await hasColumn(
-      queryInterface,
-      "appointments",
-      "scheduledTime"
-    );
-    if (hasScheduledTime) {
-      await queryInterface.removeColumn("appointments", "scheduledTime");
-    }
+    await queryInterface.removeColumn("appointments", "scheduledDate");
+    await queryInterface.removeColumn("appointments", "scheduledTime");
   },
 
   async down(queryInterface) {
@@ -152,11 +152,15 @@ module.exports = {
       // índice novo pode não existir se migration falhou antes
     }
 
-    await queryInterface.addIndex("appointments", {
-      unique: true,
-      fields: ["roomId", "scheduledDate", "scheduledTime"],
-      name: "appointments_room_schedule_unique"
-    });
+    try {
+      await queryInterface.addIndex("appointments", {
+        unique: true,
+        fields: ["roomId", "scheduledDate", "scheduledTime"],
+        name: "appointments_room_schedule_unique"
+      });
+    } catch (error) {
+      // índice antigo pode já existir
+    }
 
     const hasScheduledAt = await hasColumn(
       queryInterface,

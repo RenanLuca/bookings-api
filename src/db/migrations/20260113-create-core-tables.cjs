@@ -178,13 +178,9 @@ module.exports = {
           onUpdate: "CASCADE",
           onDelete: "CASCADE"
         },
-        scheduledDate: {
+        scheduledAt: {
           allowNull: false,
-          type: DataTypes.DATEONLY
-        },
-        scheduledTime: {
-          allowNull: false,
-          type: DataTypes.TIME
+          type: DataTypes.DATE
         },
         status: {
           allowNull: false,
@@ -210,8 +206,8 @@ module.exports = {
         indexes: [
           {
             unique: true,
-            fields: ["roomId", "scheduledDate", "scheduledTime"],
-            name: "appointments_room_schedule_unique"
+            fields: ["roomId", "scheduledAt"],
+            name: "appointments_room_scheduled_at_unique"
           }
         ]
       }

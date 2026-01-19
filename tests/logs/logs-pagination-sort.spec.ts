@@ -16,11 +16,18 @@ describe("Logs Pagination and Sorting", () => {
   const createdCustomerIds: number[] = [];
   const createdLogIds: number[] = [];
 
+  const createUniqueEmail = (email: string) => {
+    const [localPart, domain] = email.split("@");
+    const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    return domain ? `${localPart}+${suffix}@${domain}` : `${email}-${suffix}`;
+  };
+
   const createCustomerWithPermission = async (email: string) => {
+    const uniqueEmail = createUniqueEmail(email);
     const passwordHash = bcrypt.hashSync(testPassword, 10);
     const user = await User.create({
       name: "Test Customer",
-      email,
+      email: uniqueEmail,
       passwordHash,
       role: "CUSTOMER",
       status: "ACTIVE"
@@ -47,9 +54,9 @@ describe("Logs Pagination and Sorting", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email, password: testPassword });
+      .send({ email: uniqueEmail, password: testPassword });
 
-    return { user, customer, token: loginResponse.body.token as string };
+    return { user, customer, token: loginResponse.body.data.token as string };
   };
 
   const createLogForUser = async (userId: number, description: string) => {
@@ -159,8 +166,13 @@ describe("Logs Pagination and Sorting", () => {
       expect(page1Response.status).toBe(200);
       expect(page2Response.status).toBe(200);
 
-      if (page1Response.body.meta?.total !== undefined && page2Response.body.meta?.total !== undefined) {
-        expect(page1Response.body.meta.total).toBe(page2Response.body.meta.total);
+      if (
+        page1Response.body.meta?.pagination?.total !== undefined &&
+        page2Response.body.meta?.pagination?.total !== undefined
+      ) {
+        expect(page1Response.body.meta.pagination.total).toBe(
+          page2Response.body.meta.pagination.total
+        );
       }
     });
   });
