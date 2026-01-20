@@ -13,24 +13,8 @@ import { errorHandler } from "./shared/http/error-handler.js";
 
 const app = express();
 
-const normalizeOrigin = (value?: string) => value?.trim().replace(/\/$/, "");
-
-
-const allowedOrigins = [
-  normalizeOrigin(process.env.BACKOFFICE_URL),
-  normalizeOrigin(process.env.CUSTOMER_URL),
-].filter(Boolean) as string[];
-
 const corsOptions: cors.CorsOptions = {
-  origin: (origin, cb) => {
-    if (!origin) return cb(null, true);
-
-    const normalized = normalizeOrigin(origin) ?? origin;
-
-    if (allowedOrigins.includes(normalized)) return cb(null, true);
-
-    return cb(null, false);
-  },
+  origin: true,
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
