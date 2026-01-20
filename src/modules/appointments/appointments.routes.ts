@@ -16,7 +16,7 @@ const controller = new AppointmentsController();
 router.use(authMiddleware);
 
 router.post(
-  "/appointments",
+  "/",
   requireRole(["CUSTOMER"]),
   createAppointmentValidator,
   validate,
@@ -25,7 +25,7 @@ router.post(
 );
 
 router.get(
-  "/appointments/me",
+  "/me",
   requireRole(["CUSTOMER"]),
   listAppointmentsValidator,
   validate,
@@ -34,7 +34,7 @@ router.get(
 );
 
 router.get(
-  "/appointments",
+  "/",
   requireRole(["ADMIN"]),
   listAppointmentsValidator,
   validate,
@@ -43,7 +43,7 @@ router.get(
 );
 
 router.patch(
-  "/appointments/:id/accept",
+  "/:id/accept",
   requireRole(["ADMIN"]),
   appointmentIdValidator,
   validate,
@@ -52,7 +52,7 @@ router.patch(
 );
 
 router.patch(
-  "/appointments/:id/cancel",
+  "/:id/cancel",
   requireRole(["ADMIN", "CUSTOMER"]),
   appointmentIdValidator,
   validate,

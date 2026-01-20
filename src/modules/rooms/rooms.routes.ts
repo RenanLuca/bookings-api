@@ -17,7 +17,7 @@ const controller = new RoomsController();
 router.use(authMiddleware);
 
 router.get(
-  "/rooms",
+  "/",
   requireRole(["ADMIN", "CUSTOMER"]),
   listRoomsValidator,
   validate,
@@ -25,7 +25,7 @@ router.get(
     controller.list(req, res, next)
 );
 router.get(
-  "/rooms/:id",
+  "/:id",
   requireRole(["ADMIN"]),
   roomIdValidator,
   validate,
@@ -33,7 +33,7 @@ router.get(
     controller.getById(req, res, next)
 );
 router.post(
-  "/rooms",
+  "/",
   requireRole(["ADMIN"]),
   createRoomValidator,
   validate,
@@ -41,7 +41,7 @@ router.post(
     controller.create(req, res, next)
 );
 router.patch(
-  "/rooms/:id",
+  "/:id",
   requireRole(["ADMIN"]),
   updateRoomValidator,
   validate,
@@ -49,7 +49,7 @@ router.patch(
     controller.update(req, res, next)
 );
 router.delete(
-  "/rooms/:id",
+  "/:id",
   requireRole(["ADMIN"]),
   roomIdValidator,
   validate,

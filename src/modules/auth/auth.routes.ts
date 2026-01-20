@@ -12,21 +12,21 @@ const router = Router();
 const controller = new AuthController();
 
 router.post(
-  "/auth/check-email",
+  "/check-email",
   checkEmailValidator,
   validate,
   (req: Request, res: Response, next: NextFunction) =>
     controller.checkEmail(req, res, next)
 );
 router.post(
-  "/auth/login",
+  "/login",
   loginValidator,
   validate,
   (req: Request, res: Response, next: NextFunction) =>
     controller.login(req, res, next)
 );
 router.post(
-  "/auth/logout",
+  "/logout",
   authMiddleware,
   (req: Request, res: Response, next: NextFunction) =>
     controller.logout(req, res, next)

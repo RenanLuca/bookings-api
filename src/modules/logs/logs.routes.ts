@@ -13,7 +13,7 @@ const controller = new LogsController();
 router.use(authMiddleware);
 
 router.get(
-  "/logs",
+  "/",
   requireRole(["ADMIN"]),
   listLogsValidator,
   validate,
@@ -22,7 +22,7 @@ router.get(
 );
 
 router.get(
-  "/logs/me",
+  "/me",
   requireRole(["CUSTOMER"]),
   requirePermission("LOGS"),
   listLogsValidator,

@@ -47,11 +47,11 @@ app.get(
   }
 );
 
-app.use(authRoutes);
-app.use(customersRoutes);
-app.use(roomsRoutes);
-app.use(appointmentsRoutes);
-app.use(logsRoutes);
+app.use('/auth', authRoutes);
+app.use('/customers', customersRoutes);
+app.use('/rooms', roomsRoutes);
+app.use('/appointments', appointmentsRoutes);
+app.use('/logs', logsRoutes);
 app.use(errorHandler);
 
 export default app;

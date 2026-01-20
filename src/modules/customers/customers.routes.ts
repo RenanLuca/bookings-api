@@ -17,7 +17,7 @@ const router = Router();
 const controller = new CustomersController();
 
 router.post(
-  "/customers",
+  "/",
   registerCustomerValidator,
   validate,
   (req: Request, res: Response, next: NextFunction) =>
@@ -25,14 +25,14 @@ router.post(
 );
 
 router.get(
-  "/customers/me",
+  "/me",
   authMiddleware,
   requireRole(["CUSTOMER"]),
   (req: Request, res: Response, next: NextFunction) =>
     controller.getMe(req, res, next)
 );
 router.patch(
-  "/customers/me",
+  "/me",
   authMiddleware,
   requireRole(["CUSTOMER"]),
   updateMeValidator,
@@ -42,7 +42,7 @@ router.patch(
 );
 
 router.get(
-  "/customers",
+  "/",
   authMiddleware,
   requireRole(["ADMIN"]),
   listCustomersValidator,
@@ -51,7 +51,7 @@ router.get(
     controller.list(req, res, next)
 );
 router.get(
-  "/customers/:id",
+  "/:id",
   authMiddleware,
   requireRole(["ADMIN"]),
   customerIdValidator,
@@ -60,7 +60,7 @@ router.get(
     controller.getById(req, res, next)
 );
 router.delete(
-  "/customers/:id",
+  "/:id",
   authMiddleware,
   requireRole(["ADMIN"]),
   customerIdValidator,
@@ -70,7 +70,7 @@ router.delete(
 );
 
 router.patch(
-  "/customers/:id/permissions",
+  "/:id/permissions",
   authMiddleware,
   requireRole(["ADMIN"]),
   updatePermissionsValidator,
@@ -80,7 +80,7 @@ router.patch(
 );
 
 router.patch(
-  "/customers/:id/status",
+  "/:id/status",
   authMiddleware,
   requireRole(["ADMIN"]),
   updateStatusValidator,
