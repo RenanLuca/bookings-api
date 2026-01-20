@@ -7,7 +7,21 @@ import { AuthRepository } from "../../modules/auth/auth.repository.js";
 
 const repository = new AuthRepository();
 
+const publicPaths = [
+  '/health',
+  '/api/health',
+  '/auth/check-email',
+  '/auth/login'
+];
+
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+  const path = req.path;
+  
+  if (publicPaths.some(publicPath => path === publicPath || path.startsWith(publicPath))) {
+    console.log(`[AUTH] Rota pública ignorada: ${path}`);
+    return next();
+  }
+  
   console.log(`[AUTH] Middleware chamado para ${req.method} ${req.path}`);
   
   const authorization = req.headers.authorization;
