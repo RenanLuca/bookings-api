@@ -10,12 +10,22 @@ import { errorHandler } from "./shared/http/error-handler.js";
 
 const app = express();
 
+const allowedOrigins = [
+  process.env.BACKOFFICE_URL,
+  process.env.CUSTOMER_URL,
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    origin: (origin, cb) => {
+
+      if (!origin) return cb(null, true);
+
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+
+      return cb(new Error(`CORS bloqueado para: ${origin}`));
+    },
+    credentials: true, 
   })
 );
 
