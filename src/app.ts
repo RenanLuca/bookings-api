@@ -15,22 +15,19 @@ const allowedOrigins = [
   process.env.CUSTOMER_URL,
 ].filter(Boolean);
 
-app.use(
-  cors({
-    origin: (origin, cb) => {
+const corsOptions = {
+  origin: (origin: string | undefined, cb: Function) => {
+    if (!origin) return cb(null, true);
 
-      if (!origin) return cb(null, true);
+    if (allowedOrigins.includes(origin)) return cb(null, true);
 
-      if (allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error(`CORS bloqueado para: ${origin}`));
+  },
+  credentials: true,
+};
 
-      return cb(new Error(`CORS bloqueado para: ${origin}`));
-    },
-    credentials: true, 
-  })
-);
-
-
-app.options(/.*/, cors());
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 app.use(express.json());
 
@@ -53,5 +50,4 @@ app.get("/health", async (_req: Request, res: Response, next: NextFunction) => {
 
 app.use(errorHandler);
 
-export { app };
 export default app;

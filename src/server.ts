@@ -1,9 +1,12 @@
-import "dotenv/config";
-import { app } from "./app.js";
+if (process.env.NODE_ENV !== "production") {
+  await import("dotenv/config");
+}
+
+import app from "./app.js";
 import { sequelize } from "./config/sequelize.js";
 import "./models/index.js";
 
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT ?? 3000);
 
 async function bootstrap() {
   try {
