@@ -1,3 +1,3 @@
-import app from "../src/app.js";
-import "../src/models/index.js";
+import app from "../dist/app.js";
+import "../dist/models/index.js";
 export default app;
