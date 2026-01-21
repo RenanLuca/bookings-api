@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { Router } from "express";
 import { authMiddleware } from "../../shared/http/auth.middleware.js";
-import { requireRole } from "../../shared/http/require-role.middleware.js";
+import { requireRole } from "../../shared/permissions/require-role.middleware.js";
 import {
   appointmentIdValidator,
   createAppointmentValidator,

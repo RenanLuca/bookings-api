@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { validationResult } from "express-validator";
 import { ValidationError } from "../errors/index.js";
-import { ResponseHelper } from "../utils/response.helper.js";
+import { ResponseHelper } from "../http/response.helper.js";
 
 export function validate(req: Request, res: Response, next: NextFunction) {
   const errors = validationResult(req);

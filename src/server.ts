@@ -1,7 +1,4 @@
-if (process.env.NODE_ENV !== "production") {
-  await import("dotenv/config");
-}
-
+import "dotenv/config"; 
 import app from "./app.js";
 import { sequelize } from "./config/sequelize.js";
 import "./models/index.js";
@@ -12,7 +9,7 @@ async function bootstrap() {
   try {
     await sequelize.authenticate();
     app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(`Server running on port:${PORT}`);
     });
   } catch (error) {
     console.error("Failed to start server", error);

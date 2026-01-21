@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { AuthTokenInvalidError } from "./errors/index.js";
 import { AuthFactory } from "./auth.factory.js";
-import { ResponseHelper } from "../../shared/utils/response.helper.js";
+import { ResponseHelper } from "../../shared/http/response.helper.js";
 import { authMessages } from "./constants/index.js";
 
 const service = AuthFactory.createService();

@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { AuthTokenInvalidError } from "../auth/errors/index.js";
 import { RoomsFactory } from "./rooms.factory.js";
-import { ResponseHelper } from "../../shared/utils/response.helper.js";
+import { ResponseHelper } from "../../shared/http/response.helper.js";
 import { roomsMessages } from "./constants/index.js";
 import type { CreateRoomInput, UpdateRoomInput } from "./dto/index.js";
 

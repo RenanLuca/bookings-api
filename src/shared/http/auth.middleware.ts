@@ -1,64 +1,61 @@
 import type { NextFunction, Request, Response } from "express";
-import jwt, { type JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { env } from "../../config/env.js";
 import type { UserRole } from "../../models/user.model.js";
 import { AuthTokenInvalidError } from "../../modules/auth/errors/index.js";
-import { AuthRepository } from "../../modules/auth/auth.repository.js";
+import { RepositoryFactory } from "../factories/repository.factory.js";
 
-const repository = new AuthRepository();
+const authRepository = RepositoryFactory.getAuthRepository();
 
-const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  console.log(`[AUTH] Middleware chamado para ${req.method} ${req.path}`);
-  
+export const authMiddleware = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+) => {
   const authorization = req.headers.authorization;
-  console.log('[AUTH] Authorization header:', authorization ? 'presente' : 'ausente');
-  
+
   if (!authorization || !authorization.startsWith("Bearer ")) {
-    console.log('[AUTH] Token não encontrado ou formato inválido');
     return next(new AuthTokenInvalidError());
   }
-  
-  const token = authorization.replace("Bearer ", "");
-  console.log('[AUTH] Token extraído, tamanho:', token.length);
-  
+
+  const token = authorization.slice("Bearer ".length);
+
   try {
-    console.log('[AUTH] Verificando token JWT...');
-    const payload = jwt.verify(token, env.jwtSecret) as JwtPayload;
-    console.log('[AUTH] Token JWT válido, payload:', { userId: payload.userId, role: payload.role });
-    
+    const decoded = jwt.verify(token, env.jwtSecret);
+
+    if (!decoded || typeof decoded !== "object") {
+      return next(new AuthTokenInvalidError());
+    }
+
+    const payload = decoded as jwt.JwtPayload;
+
+    const userId = Number(payload.userId);
+    const role = payload.role;
+    const email = payload.email;
+
     if (
-      typeof payload !== "object" ||
-      payload.userId === undefined ||
-      payload.role === undefined ||
-      payload.email === undefined
+      !Number.isFinite(userId) ||
+      typeof role !== "string" ||
+      typeof email !== "string"
     ) {
-      console.log('[AUTH] Payload do token inválido');
       return next(new AuthTokenInvalidError());
     }
-    
-    console.log('[AUTH] Verificando token ativo no banco...');
-    const activeToken = await repository.findActiveToken(
-      token,
-      Number(payload.userId)
-    );
-    
+
+    const activeToken = await authRepository.findActiveToken(token, userId);
+
     if (!activeToken) {
-      console.log('[AUTH] Token não encontrado no banco ou inativo');
       return next(new AuthTokenInvalidError());
     }
-    
-    console.log('[AUTH] Token válido e ativo');
+
     req.user = {
-      userId: Number(payload.userId),
-      role: payload.role as UserRole,
-      email: String(payload.email),
+      userId,
+      role: role as UserRole,
+      email,
       token
     };
+
     return next();
-  } catch (error) {
-    console.error('[AUTH] Erro ao verificar token:', error);
+  } catch {
     return next(new AuthTokenInvalidError());
   }
 };
-
-export { authMiddleware };

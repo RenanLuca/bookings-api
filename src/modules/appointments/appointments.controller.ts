@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { matchedData } from "express-validator";
 import { AuthTokenInvalidError } from "../auth/errors/index.js";
 import { AppointmentsFactory } from "./appointments.factory.js";
-import { ResponseHelper } from "../../shared/utils/response.helper.js";
+import { ResponseHelper } from "../../shared/http/response.helper.js";
 import { appointmentsMessages } from "./constants/index.js";
 import type { CreateAppointmentInput } from "./dto/index.js";
 

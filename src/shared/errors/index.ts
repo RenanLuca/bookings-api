@@ -1,5 +1,7 @@
 export { BaseError } from "./base-error.js";
-export { ForbiddenError, ValidationError, InternalError } from "./common.errors.js";
+export { ForbiddenError } from "./forbiddenError.js";
+export { ValidationError } from "./validationError.js";
+export { InternalError } from "./internalError.js";
 export {
   AuthInvalidCredentialsError,
   AuthTokenInvalidError,

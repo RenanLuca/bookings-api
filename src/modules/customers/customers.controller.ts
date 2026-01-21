@@ -4,7 +4,7 @@ import { AuthTokenInvalidError } from "../auth/errors/index.js";
 import { CustomersFactory } from "./customers.factory.js";
 import { PermissionsFactory } from "../permissions/permissions.factory.js";
 import { customersMessages } from "./constants/index.js";
-import { ResponseHelper } from "../../shared/utils/response.helper.js";
+import { ResponseHelper } from "../../shared/http/response.helper.js";
 import {
   toUtcEndOfDayFromAppTz,
   toUtcStartOfDayFromAppTz
