@@ -22,27 +22,13 @@ class AuthController {
     }
   }
 
-  async loginAdmin(req: Request, res: Response, next: NextFunction) {
+  async login(req: Request, res: Response, next: NextFunction) {
     const email = req.body.email as string;
     const password = req.body.password as string;
+    const isAdmin = req.body.isAdmin as boolean;
+    const role = isAdmin ? "ADMIN" : "CUSTOMER";
     try {
-      const result = await service.login(email, password, "ADMIN");
-      return res.status(200).json(
-        ResponseHelper.success(
-          { token: result.token, user: result.user },
-          authMessages.login.success
-        )
-      );
-    } catch (error) {
-      return next(error);
-    }
-  }
-
-  async loginCustomer(req: Request, res: Response, next: NextFunction) {
-    const email = req.body.email as string;
-    const password = req.body.password as string;
-    try {
-      const result = await service.login(email, password, "CUSTOMER");
+      const result = await service.login(email, password, role);
       return res.status(200).json(
         ResponseHelper.success(
           { token: result.token, user: result.user },

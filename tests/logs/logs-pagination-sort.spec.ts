@@ -54,7 +54,7 @@ describe("Logs Pagination and Sorting", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email: uniqueEmail, password: testPassword });
+      .send({ email: uniqueEmail, password: testPassword, isAdmin: false });
 
     return { user, customer, token: loginResponse.body.data.token as string };
   };

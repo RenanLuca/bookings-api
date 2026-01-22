@@ -9,5 +9,10 @@ export const loginValidator = [
     .normalizeEmail(),
   body("password")
     .notEmpty()
-    .withMessage("Senha é obrigatória")
+    .withMessage("Senha é obrigatória"),
+  body("isAdmin")
+    .notEmpty()
+    .withMessage("isAdmin é obrigatório")
+    .isBoolean()
+    .withMessage("isAdmin deve ser um valor booleano")
 ];

@@ -60,7 +60,7 @@ describe("JWT Expiration", () => {
   it("should return 401 when token is expired", async () => {
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email: testEmail, password: testPassword });
+      .send({ email: testEmail, password: testPassword, isAdmin: false });
 
     expect(loginResponse.status).toBe(200);
     const validToken = loginResponse.body.data.token;
@@ -85,7 +85,7 @@ describe("JWT Expiration", () => {
   it("should return 200 when token is still valid", async () => {
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email: testEmail, password: testPassword });
+      .send({ email: testEmail, password: testPassword, isAdmin: false });
 
     expect(loginResponse.status).toBe(200);
     const validToken = loginResponse.body.data.token;

@@ -32,7 +32,7 @@ describe("POST /auth/login", () => {
   it("should return 200 and token when credentials are valid", async () => {
     const response = await request(app)
       .post("/auth/login")
-      .send({ email: testEmail, password: testPassword });
+      .send({ email: testEmail, password: testPassword, isAdmin: false });
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("data");
@@ -47,14 +47,14 @@ describe("POST /auth/login", () => {
   it("should return 401 when password is invalid", async () => {
     const response = await request(app)
       .post("/auth/login")
-      .send({ email: testEmail, password: "WrongPassword123!" });
+      .send({ email: testEmail, password: "WrongPassword123!", isAdmin: false });
 
     expect(response.status).toBe(401);
     expect(response.body).toHaveProperty("code", "AUTH_INVALID_CREDENTIALS");
   });
 
   it("should return 403 when user is inactive", async () => {
-    const inactiveEmail = "inactive-user@example.com";
+    const inactiveEmail = `inactive-${Date.now()}@example.com`;
     const passwordHash = bcrypt.hashSync(testPassword, 10);
     const inactiveUser = await User.create({
       name: "Inactive User",
@@ -66,7 +66,7 @@ describe("POST /auth/login", () => {
 
     const response = await request(app)
       .post("/auth/login")
-      .send({ email: inactiveEmail, password: testPassword });
+      .send({ email: inactiveEmail, password: testPassword, isAdmin: false });
 
     expect(response.status).toBe(403);
     expect(response.body).toHaveProperty("code", "AUTH_USER_INACTIVE");

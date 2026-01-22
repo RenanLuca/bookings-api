@@ -63,7 +63,7 @@ describe("Appointments Endpoints", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email, password: testPassword });
+      .send({ email, password: testPassword, isAdmin: false });
 
     return { user, customer, token: loginResponse.body.data.token as string };
   };
@@ -100,7 +100,10 @@ describe("Appointments Endpoints", () => {
       const room = await createRoom("Room Timezone Test");
       const customer = await createCustomerWithPermission("customer-tz@test.com");
 
-      const inputDateTime = "2026-01-20T10:00:00";
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const inputDateTime = `${tomorrow.toISOString().split('T')[0]}T10:00:00`;
+      const expectedUtc = `${tomorrow.toISOString().split('T')[0]}T13:00:00.000Z`;
 
       const response = await request(app)
         .post("/appointments")
@@ -116,14 +119,14 @@ describe("Appointments Endpoints", () => {
       createdAppointmentIds.push(response.body.data.id);
 
       const returnedDate = response.body.data.scheduledAt;
-      expect(returnedDate).toBe("2026-01-20T13:00:00.000Z");
+      expect(returnedDate).toBe(expectedUtc);
 
       const dbRecord = await Appointment.findByPk(response.body.data.id);
       expect(dbRecord).not.toBeNull();
 
       const dbDate = new Date(dbRecord!.scheduledAt);
-      const expectedUtc = new Date("2026-01-20T13:00:00Z");
-      expect(dbDate.getTime()).toBe(expectedUtc.getTime());
+      const expectedUtcDate = new Date(expectedUtc);
+      expect(dbDate.getTime()).toBe(expectedUtcDate.getTime());
     });
   });
 
@@ -133,7 +136,9 @@ describe("Appointments Endpoints", () => {
       const customerA = await createCustomerWithPermission("customer-a@test.com");
       const customerB = await createCustomerWithPermission("customer-b@test.com");
 
-      const scheduledAt = "2026-01-21T14:00:00";
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const scheduledAt = `${tomorrow.toISOString().split('T')[0]}T14:00:00`;
 
       const firstResponse = await request(app)
         .post("/appointments")
@@ -164,12 +169,16 @@ describe("Appointments Endpoints", () => {
       const room = await createRoom("Room Hours Start Test");
       const customer = await createCustomerWithPermission("customer-hours-start@test.com");
 
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const scheduledAt = `${tomorrow.toISOString().split('T')[0]}T07:00:00`;
+
       const response = await request(app)
         .post("/appointments")
         .set("Authorization", `Bearer ${customer.token}`)
         .send({
           roomId: room.id,
-          scheduledAt: "2026-01-21T07:00:00"
+          scheduledAt
         });
 
       expect(response.status).toBe(400);
@@ -180,12 +189,16 @@ describe("Appointments Endpoints", () => {
       const room = await createRoom("Room Hours End Test");
       const customer = await createCustomerWithPermission("customer-hours-end@test.com");
 
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const scheduledAt = `${tomorrow.toISOString().split('T')[0]}T18:30:00`;
+
       const response = await request(app)
         .post("/appointments")
         .set("Authorization", `Bearer ${customer.token}`)
         .send({
           roomId: room.id,
-          scheduledAt: "2026-01-21T18:30:00"
+          scheduledAt
         });
 
       expect(response.status).toBe(400);
@@ -220,7 +233,9 @@ describe("Appointments Endpoints", () => {
       const customerA = await createCustomerWithPermission("customer-room-a@test.com");
       const customerB = await createCustomerWithPermission("customer-room-b@test.com");
 
-      const scheduledAt = "2026-01-22T09:00:00";
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const scheduledAt = `${tomorrow.toISOString().split('T')[0]}T09:00:00`;
 
       const responseA = await request(app)
         .post("/appointments")
@@ -257,12 +272,16 @@ describe("Appointments Endpoints", () => {
         false
       );
 
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const scheduledAt = `${tomorrow.toISOString().split('T')[0]}T11:00:00`;
+
       const createResponse = await request(app)
         .post("/appointments")
         .set("Authorization", `Bearer ${blockedCustomer.token}`)
         .send({
           roomId: room.id,
-          scheduledAt: "2026-01-23T11:00:00"
+          scheduledAt
         });
 
       expect(createResponse.status).toBe(403);

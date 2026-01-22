@@ -1,11 +1,11 @@
 meta {
-  name: Login Admin
+  name: Login
   type: http
   seq: 1
 }
 
 post {
-  url: {{baseUrl}}/auth/login/admin
+  url: {{baseUrl}}/auth/login
   body: json
   auth: none
 }
@@ -13,34 +13,44 @@ post {
 body:json {
   {
     "email": "admin@bookings3.com",
-    "password": "admin123"
+    "password": "admin123",
+    "isAdmin": true
   }
 }
 
 tests {
-  test("should login admin successfully", function() {
+  test("should login successfully", function() {
     expect(res.getStatus()).to.equal(200);
     const body = res.getBody();
     expect(body).to.have.property("success", true);
     expect(body).to.have.property("data");
     expect(body.data).to.have.property("user");
     expect(body.data).to.have.property("token");
-    expect(body.data.user.role).to.equal("ADMIN");
     bru.setVar("token", body.data.token);
     bru.setVar("userId", body.data.user.id);
   });
 }
 
 docs {
-  # Login Admin
-  Autentica um usuário administrador e retorna o token JWT para acessar endpoints protegidos.
-  Este endpoint aceita apenas usuários com role ADMIN.
+  # Login
+  Autentica um usuário (administrador ou cliente) e retorna o token JWT para acessar endpoints protegidos.
+  O campo `isAdmin` determina se o login é para um usuário ADMIN ou CUSTOMER.
   
-  ## Exemplo de requisição
+  ## Exemplo de requisição (Admin)
   ```json
   {
     "email": "admin@example.com",
-    "password": "senha-secreta"
+    "password": "senha-secreta",
+    "isAdmin": true
+  }
+  ```
+  
+  ## Exemplo de requisição (Customer)
+  ```json
+  {
+    "email": "customer@example.com",
+    "password": "senha-secreta",
+    "isAdmin": false
   }
   ```
   
@@ -53,8 +63,8 @@ docs {
       "token": "eyJhbGciOi...",
       "user": {
         "id": 1,
-        "name": "Admin",
-        "email": "admin@example.com",
+        "name": "User Name",
+        "email": "user@example.com",
         "role": "ADMIN"
       }
     }
@@ -63,8 +73,8 @@ docs {
   
   ## Status codes
   - 200 Sucesso
-  - 400 Erro de validação
-  - 401 Credenciais inválidas ou usuário não é admin
+  - 400 Erro de validação (email, password ou isAdmin inválidos)
+  - 401 Credenciais inválidas ou role não corresponde ao isAdmin informado
   - 403 Usuário inativo
   - 500 Erro interno
 }

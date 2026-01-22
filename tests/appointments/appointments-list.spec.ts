@@ -67,7 +67,7 @@ describe("Customer Appointments List", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email, password: testPassword });
+      .send({ email, password: testPassword, isAdmin: false });
 
     return { user, customer, token: loginResponse.body.data.token as string };
   };

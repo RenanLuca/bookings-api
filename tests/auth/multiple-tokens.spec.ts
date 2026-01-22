@@ -64,7 +64,7 @@ describe("Multiple Tokens and Selective Logout", () => {
 
     const loginA = await request(app)
       .post("/auth/login")
-      .send({ email: user.email, password: testPassword });
+      .send({ email: user.email, password: testPassword, isAdmin: false });
     expect(loginA.status).toBe(200);
     const tokenA = loginA.body.data.token;
 
@@ -72,7 +72,7 @@ describe("Multiple Tokens and Selective Logout", () => {
 
     const loginB = await request(app)
       .post("/auth/login")
-      .send({ email: user.email, password: testPassword });
+      .send({ email: user.email, password: testPassword, isAdmin: false });
     expect(loginB.status).toBe(200);
     const tokenB = loginB.body.data.token;
 
@@ -94,7 +94,7 @@ describe("Multiple Tokens and Selective Logout", () => {
 
     const loginA = await request(app)
       .post("/auth/login")
-      .send({ email: user.email, password: testPassword });
+      .send({ email: user.email, password: testPassword, isAdmin: false });
     expect(loginA.status).toBe(200);
     const tokenA = loginA.body.data.token;
 
@@ -102,7 +102,7 @@ describe("Multiple Tokens and Selective Logout", () => {
 
     const loginB = await request(app)
       .post("/auth/login")
-      .send({ email: user.email, password: testPassword });
+      .send({ email: user.email, password: testPassword, isAdmin: false });
     expect(loginB.status).toBe(200);
     const tokenB = loginB.body.data.token;
 
@@ -129,7 +129,7 @@ describe("Multiple Tokens and Selective Logout", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email: user.email, password: testPassword });
+      .send({ email: user.email, password: testPassword, isAdmin: false });
     expect(loginResponse.status).toBe(200);
     const token = loginResponse.body.data.token;
 

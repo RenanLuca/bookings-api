@@ -29,7 +29,7 @@ describe("Rooms Validation", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email: uniqueEmail, password: testPassword });
+      .send({ email: uniqueEmail, password: testPassword, isAdmin: true });
 
     return { user, token: loginResponse.body.data.token as string };
   };

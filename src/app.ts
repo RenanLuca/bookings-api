@@ -10,7 +10,7 @@ import { corsOptions } from "./shared/http/cors.js";
 import { errorHandler } from "./shared/http/error-handler.js";
 
 
-const app = express();
+export const app = express();
 
 app.use(cors(corsOptions));
 
@@ -35,4 +35,4 @@ app.use('/appointments', appointmentsRoutes);
 app.use('/logs', logsRoutes);
 app.use(errorHandler);
 
-export default app;
+

@@ -65,7 +65,7 @@ describe("Appointments Timezone Handling", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email, password: testPassword });
+      .send({ email, password: testPassword, isAdmin: false });
 
     return { user, customer: customerRecord, token: loginResponse.body.data.token as string };
   };
@@ -83,7 +83,7 @@ describe("Appointments Timezone Handling", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email, password: testPassword });
+      .send({ email, password: testPassword, isAdmin: true });
 
     return loginResponse.body.data.token as string;
   };

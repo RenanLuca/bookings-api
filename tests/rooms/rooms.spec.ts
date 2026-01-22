@@ -22,7 +22,7 @@ describe("Rooms Endpoints", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email, password: testPassword });
+      .send({ email, password: testPassword, isAdmin: true });
 
     return { user, token: loginResponse.body.data.token as string };
   };
@@ -40,7 +40,7 @@ describe("Rooms Endpoints", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email, password: testPassword });
+      .send({ email, password: testPassword, isAdmin: false });
 
     return { user, token: loginResponse.body.data.token as string };
   };

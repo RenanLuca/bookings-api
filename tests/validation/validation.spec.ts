@@ -27,7 +27,7 @@ describe("Validation Middleware - 400 responses", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email, password: testPassword });
+      .send({ email, password: testPassword, isAdmin: true });
 
     return { user, token: loginResponse.body.data.token as string };
   };
@@ -63,7 +63,7 @@ describe("Validation Middleware - 400 responses", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email, password: testPassword });
+      .send({ email, password: testPassword, isAdmin: false });
 
     return { user, customer, token: loginResponse.body.data.token as string };
   };
@@ -91,7 +91,7 @@ describe("Validation Middleware - 400 responses", () => {
     it("should return 400 with validation code when email is invalid", async () => {
       const response = await request(app)
         .post("/auth/login")
-        .send({ email: "abc", password: "123" });
+        .send({ email: "abc", password: "123", isAdmin: false });
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty("code", "VALIDATION_ERROR");
@@ -100,7 +100,7 @@ describe("Validation Middleware - 400 responses", () => {
     it("should return 400 when email is empty", async () => {
       const response = await request(app)
         .post("/auth/login")
-        .send({ email: "", password: "123" });
+        .send({ email: "", password: "123", isAdmin: false });
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty("code", "VALIDATION_ERROR");
@@ -109,7 +109,7 @@ describe("Validation Middleware - 400 responses", () => {
     it("should return 400 when password is missing", async () => {
       const response = await request(app)
         .post("/auth/login")
-        .send({ email: "valid@email.com" });
+        .send({ email: "valid@email.com", isAdmin: false });
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty("code", "VALIDATION_ERROR");

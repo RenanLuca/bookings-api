@@ -50,7 +50,7 @@ describe("Customer Module Permissions", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email: testEmail, password: testPassword });
+      .send({ email: testEmail, password: testPassword, isAdmin: false });
 
     authToken = loginResponse.body.data.token;
   };
