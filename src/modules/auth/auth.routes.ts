@@ -19,11 +19,18 @@ router.post(
     controller.checkEmail(req, res, next)
 );
 router.post(
-  "/login",
+  "/login/admin",
   loginValidator,
   validate,
   (req: Request, res: Response, next: NextFunction) =>
-    controller.login(req, res, next)
+    controller.loginAdmin(req, res, next)
+);
+router.post(
+  "/login/customer",
+  loginValidator,
+  validate,
+  (req: Request, res: Response, next: NextFunction) =>
+    controller.loginCustomer(req, res, next)
 );
 router.post(
   "/logout",

@@ -1,47 +1,45 @@
 meta {
-  name: Login
+  name: Login Customer
   type: http
-  seq: 1
+  seq: 2
 }
 
 post {
-  url: {{baseUrl}}/auth/login
+  url: {{baseUrl}}/auth/login/customer
   body: json
-  auth: bearer
-}
-
-auth:bearer {
-  token: {{token}}
+  auth: none
 }
 
 body:json {
   {
-    "email": "admin@bookings3.com",
-    "password": "admin123"
+    "email": "customer@bookings.com",
+    "password": "customer123"
   }
 }
 
 tests {
-  test("should login successfully", function() {
+  test("should login customer successfully", function() {
     expect(res.getStatus()).to.equal(200);
     const body = res.getBody();
     expect(body).to.have.property("success", true);
     expect(body).to.have.property("data");
     expect(body.data).to.have.property("user");
     expect(body.data).to.have.property("token");
+    expect(body.data.user.role).to.equal("CUSTOMER");
     bru.setVar("token", body.data.token);
     bru.setVar("userId", body.data.user.id);
   });
 }
 
 docs {
-  # Login
-  Autentica o usuário e retorna o token JWT para acessar endpoints protegidos.
+  # Login Customer
+  Autentica um usuário cliente e retorna o token JWT para acessar endpoints protegidos.
+  Este endpoint aceita apenas usuários com role CUSTOMER.
   
   ## Exemplo de requisição
   ```json
   {
-    "email": "admin@example.com",
+    "email": "customer@example.com",
     "password": "senha-secreta"
   }
   ```
@@ -54,10 +52,10 @@ docs {
     "data": {
       "token": "eyJhbGciOi...",
       "user": {
-        "id": 1,
-        "name": "Admin",
-        "email": "admin@example.com",
-        "role": "ADMIN"
+        "id": 2,
+        "name": "Customer",
+        "email": "customer@example.com",
+        "role": "CUSTOMER"
       }
     }
   }
@@ -66,7 +64,7 @@ docs {
   ## Status codes
   - 200 Sucesso
   - 400 Erro de validação
-  - 401 Credenciais inválidas
+  - 401 Credenciais inválidas ou usuário não é customer
   - 403 Usuário inativo
   - 500 Erro interno
 }

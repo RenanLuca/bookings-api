@@ -22,7 +22,10 @@ export const customersMessages = {
   },
   permissions: {
     success: "Permissões atualizadas com sucesso.",
-    error: "Erro ao atualizar permissões."
+    error: "Erro ao atualizar permissões.",
+    get: {
+      success: "Permissões recuperadas com sucesso."
+    }
   },
   status: {
     success: "Status atualizado com sucesso.",

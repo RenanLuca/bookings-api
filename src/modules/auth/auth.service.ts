@@ -13,6 +13,7 @@ import { authMessages } from "./constants/index.js";
 import type { ILogsService } from "../logs/logs.service.interface.js";
 import type { IAuthRepository } from "./auth.repository.interface.js";
 import type { CheckEmailResult, LoginResult } from "./dto/index.js";
+import type { UserRole } from "../../models/user.model.js";
 
 class AuthService  {
   constructor(
@@ -46,9 +47,12 @@ class AuthService  {
     return { exists, canLogin, message };
   }
 
-  async login(email: string, password: string): Promise<LoginResult> {
+  async login(email: string, password: string, expectedRole: UserRole): Promise<LoginResult> {
     const user = await this.repository.findUserByEmail(email);
     if (!user) {
+      throw new AuthInvalidCredentialsError();
+    }
+    if (user.role !== expectedRole) {
       throw new AuthInvalidCredentialsError();
     }
     if (user.status !== "ACTIVE") {

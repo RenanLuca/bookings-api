@@ -267,6 +267,15 @@ class CustomersService {
     }
     return { profile: this.mapProfile(profile), message: customersMessages.status.success };
   }
+
+  async getMyPermissions(userId: number) {
+    const customer = await this.repository.findCustomerByUserId(userId);
+    if (!customer) {
+      throw new UserNotFoundError();
+    }
+    const permissions = await this.permissionsService.getPermissionsByCustomerId(customer.id);
+    return { permissions };
+  }
 }
 
 export { CustomersService };

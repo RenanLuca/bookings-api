@@ -178,6 +178,18 @@ class CustomersController {
       return next(error);
     }
   }
+
+  async getMyPermissions(req: Request, res: Response, next: NextFunction) {
+    const userId = req.user!.userId;
+    try {
+      const result = await service.getMyPermissions(userId);
+      return res.status(200).json(
+        ResponseHelper.success(result, customersMessages.permissions.get.success)
+      );
+    } catch (error) {
+      return next(error);
+    }
+  }
 }
 
 export { CustomersController };

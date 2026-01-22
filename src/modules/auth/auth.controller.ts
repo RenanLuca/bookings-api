@@ -22,11 +22,27 @@ class AuthController {
     }
   }
 
-  async login(req: Request, res: Response, next: NextFunction) {
+  async loginAdmin(req: Request, res: Response, next: NextFunction) {
     const email = req.body.email as string;
     const password = req.body.password as string;
     try {
-      const result = await service.login(email, password);
+      const result = await service.login(email, password, "ADMIN");
+      return res.status(200).json(
+        ResponseHelper.success(
+          { token: result.token, user: result.user },
+          authMessages.login.success
+        )
+      );
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async loginCustomer(req: Request, res: Response, next: NextFunction) {
+    const email = req.body.email as string;
+    const password = req.body.password as string;
+    try {
+      const result = await service.login(email, password, "CUSTOMER");
       return res.status(200).json(
         ResponseHelper.success(
           { token: result.token, user: result.user },

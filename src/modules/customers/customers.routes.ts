@@ -31,6 +31,13 @@ router.get(
   (req: Request, res: Response, next: NextFunction) =>
     controller.getMe(req, res, next)
 );
+router.get(
+  "/me/permissions",
+  authMiddleware,
+  requireRole(["CUSTOMER"]),
+  (req: Request, res: Response, next: NextFunction) =>
+    controller.getMyPermissions(req, res, next)
+);
 router.patch(
   "/me",
   authMiddleware,

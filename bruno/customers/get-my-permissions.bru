@@ -1,0 +1,57 @@
+meta {
+  name: Minhas Permissões
+  type: "http"
+}
+
+get {
+  url: {{baseUrl}}/customers/me/permissions
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Minhas Permissões
+  Retorna as permissões de módulos do cliente autenticado. Apenas para role CUSTOMER.
+
+  ## Exemplo de requisição
+  ```
+  GET {{baseUrl}}/customers/me/permissions
+  Header: Authorization: Bearer {{token}}
+  ```
+
+  ## Exemplo de resposta (200)
+  ```json
+  {
+    "success": true,
+    "message": "Permissões recuperadas com sucesso.",
+    "data": {
+      "permissions": [
+        {
+          "module": "LOGS",
+          "canView": true
+        },
+        {
+          "module": "APPOINTMENTS",
+          "canView": false
+        }
+      ]
+    }
+  }
+  ```
+
+  ## Descrição
+  Este endpoint retorna todas as permissões de módulos do cliente autenticado.
+  - Se não houver registro de permissão para um módulo, o padrão é `canView: true`
+  - Os módulos disponíveis são: LOGS, APPOINTMENTS
+  - O frontend pode usar essas permissões para mostrar ou ocultar rotas
+
+  ## Status codes
+  - 200 Sucesso
+  - 401 Token inválido ou ausente
+  - 403 Acesso negado (role não é CUSTOMER)
+  - 404 Cliente não encontrado
+  - 500 Erro interno
+}
