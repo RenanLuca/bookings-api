@@ -42,7 +42,7 @@ class AuthService  {
     } else {
       message = authMessages.checkEmail.found;
     }
-
+    
     return { exists, canLogin, message };
   }
 

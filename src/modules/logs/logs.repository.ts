@@ -1,7 +1,7 @@
 import { Op, type FindAndCountOptions, type OrderItem } from "sequelize";
 import { ActivityLog, User } from "../../models/index.js";
-import type { CreateLogInput } from "./dto/index.js";
-import type { ILogsRepository, ListByUserIdParams, FindAllWithFiltersParams } from "./logs.repository.interface.js";
+import type { CreateLogInput, ListByUserIdParams, FindAllWithFiltersParams } from "./dto/index.js";
+import type { ILogsRepository } from "./logs.repository.interface.js";
 import { LogsModules } from "./dto/logs-modules.dto.js";
 
 class LogsRepository implements ILogsRepository {

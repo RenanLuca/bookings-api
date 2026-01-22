@@ -58,10 +58,7 @@ class RoomsController {
   }
 
   async create(req: Request, res: Response, next: NextFunction) {
-    const authUser = req.user;
-    if (!authUser) {
-      return next(new AuthTokenInvalidError());
-    }
+    const userId = req.user!.userId;
     const payload: CreateRoomInput = {
       name: req.body.name,
       startTime: req.body.startTime,
@@ -69,7 +66,7 @@ class RoomsController {
       slotDurationMinutes: req.body.slotDurationMinutes
     };
     try {
-      const result = await service.createRoom(payload, authUser.userId);
+      const result = await service.createRoom(payload, userId);
       return res.status(201).json(
         ResponseHelper.success(result.room, roomsMessages.create.success)
       );
@@ -79,10 +76,7 @@ class RoomsController {
   }
 
   async update(req: Request, res: Response, next: NextFunction) {
-    const authUser = req.user;
-    if (!authUser) {
-      return next(new AuthTokenInvalidError());
-    }
+    const userId = req.user!.userId;
     const id = Number(req.params.id);
     const payload: UpdateRoomInput = {
       name: req.body?.name,
@@ -91,7 +85,7 @@ class RoomsController {
       slotDurationMinutes: req.body?.slotDurationMinutes
     };
     try {
-      const result = await service.updateRoom(id, payload, authUser.userId);
+      const result = await service.updateRoom(id, payload, userId);
       return res.status(200).json(
         ResponseHelper.success(result.room, roomsMessages.update.success)
       );
@@ -101,13 +95,10 @@ class RoomsController {
   }
 
   async remove(req: Request, res: Response, next: NextFunction) {
-    const authUser = req.user;
-    if (!authUser) {
-      return next(new AuthTokenInvalidError());
-    }
+    const userId = req.user!.userId;
     const id = Number(req.params.id);
     try {
-      await service.deleteRoom(id, authUser.userId);
+      await service.deleteRoom(id, userId);
       return res.status(200).json(
         ResponseHelper.successMessage(roomsMessages.delete.success)
       );

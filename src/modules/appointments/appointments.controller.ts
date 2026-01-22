@@ -10,17 +10,14 @@ const service = AppointmentsFactory.createService();
 
 class AppointmentsController {
   async create(req: Request, res: Response, next: NextFunction) {
-    const authUser = req.user;
-    if (!authUser) {
-      return next(new AuthTokenInvalidError());
-    }
+    const userId = req.user!.userId;
     const payload: CreateAppointmentInput = {
       roomId: req.body.roomId,
       scheduledAt: req.body.scheduledAt
     };
     try {
       const result = await service.createAppointment(
-        authUser.userId,
+        userId,
         payload
       );
       return res.status(201).json(
@@ -32,10 +29,7 @@ class AppointmentsController {
   }
 
   async listMine(req: Request, res: Response, next: NextFunction) {
-    const authUser = req.user;
-    if (!authUser) {
-      return next(new AuthTokenInvalidError());
-    }
+    const userId = req.user!.userId;
     const page = req.query.page ? Number(req.query.page) : 1;
     const pageSize = req.query.pageSize ? Number(req.query.pageSize) : 10;
     const sortParam = typeof req.query.sort === "string" ? req.query.sort : "";
@@ -55,7 +49,7 @@ class AppointmentsController {
         ...(queryData.search ? { search: queryData.search } : {})
       };
       const result = await service.listMyAppointments(
-        authUser.userId,
+        userId,
         filters
       );
       return res.status(200).json(
@@ -113,13 +107,10 @@ class AppointmentsController {
   }
 
   async accept(req: Request, res: Response, next: NextFunction) {
-    const authUser = req.user;
-    if (!authUser) {
-      return next(new AuthTokenInvalidError());
-    }
+    const userId = req.user!.userId;
     const id = Number(req.params.id);
     try {
-      const result = await service.acceptAppointment(id, authUser.userId);
+      const result = await service.acceptAppointment(id, userId);
       return res.status(200).json(
         ResponseHelper.success(result.appointment, appointmentsMessages.accept.success)
       );
@@ -129,10 +120,7 @@ class AppointmentsController {
   }
 
   async cancel(req: Request, res: Response, next: NextFunction) {
-    const authUser = req.user;
-    if (!authUser) {
-      return next(new AuthTokenInvalidError());
-    }
+    const authUser = req.user!;
     const id = Number(req.params.id);
     try {
       const result = await service.cancelAppointment(id, authUser.userId, authUser.role);

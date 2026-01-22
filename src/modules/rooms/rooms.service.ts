@@ -1,6 +1,7 @@
 import { ValidationError } from "../../shared/errors/index.js";
 import { RoomNotFoundError } from "./errors/index.js";
 import { roomsMessages } from "./constants/index.js";
+import type { Room } from "../../models/room.model.js";
 import type { ILogsService } from "../logs/logs.service.interface.js";
 import type { IRoomsRepository } from "./rooms.repository.interface.js";
 import type {
@@ -94,7 +95,7 @@ class RoomsService {
     return room;
   }
 
-  async createRoom(input: CreateRoomInput, actorId: number): Promise<{ room: typeof room; message: string }> {
+  async createRoom(input: CreateRoomInput, actorId: number): Promise<{ room: Room; message: string }> {
     const name = input.name.trim();
     const startTime = this.parseTime(input.startTime);
     const endTime = this.parseTime(input.endTime);
@@ -164,7 +165,7 @@ class RoomsService {
     return { updates, changes, finalStart, finalEnd };
   }
 
-  async updateRoom(id: number, input: UpdateRoomInput, actorId: number): Promise<{ room: typeof updated; message: string }> {
+  async updateRoom(id: number, input: UpdateRoomInput, actorId: number): Promise<{ room: Room; message: string }> {
     const current = await this.repository.findById(id);
     if (!current) {
       throw new RoomNotFoundError();

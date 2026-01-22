@@ -1,11 +1,7 @@
-import type { ActivityLog } from "../../models/activity-log.model.js";
-import type { UserRole } from "../../models/user.model.js";
-import type { CreateLogInput, ListLogsInput, ListLogsResult, LogResponse, ListAllLogsInput, ListLogsMeta } from "./dto/index.js";
+
+import type { CreateLogInput, ListLogsInput, ListLogsResult, LogResponse, ListAllLogsInput, ListLogsMeta, ActivityLogWithUser } from "./dto/index.js";
 import type { ILogsRepository } from "./logs.repository.interface.js";
 
-type ActivityLogWithUser = ActivityLog & {
-  User?: { id: number; name: string; role: UserRole } | null;
-};
 
 class LogsService {
   constructor(private readonly repository: ILogsRepository) {}
@@ -28,6 +24,7 @@ class LogsService {
         : {})
     };
   }
+  
 
   private buildMeta(page: number, pageSize: number, total: number, sort: "asc" | "desc"): ListLogsMeta {
     return { page, pageSize, total, sort };
@@ -49,7 +46,7 @@ class LogsService {
     });
 
     return {
-      data: rows.map((log) => this.mapLog(log as ActivityLogWithUser)),
+      data: rows.map((log) => this.mapLog(log)),
       meta: this.buildMeta(params.page, params.pageSize, count, params.sort)
     };
   }
@@ -58,18 +55,19 @@ class LogsService {
     const offset = (params.page - 1) * params.pageSize;
 
     const { rows, count } = await this.repository.findAllWithFilters({
-      module: params.module,
-      userId: params.userId,
       limit: params.pageSize,
       offset,
       order: params.sort,
+      ...(params.module ? { module: params.module } : {}),
+      ...(typeof params.userId === "number" ? { userId: params.userId } : {}),
       ...(params.from ? { from: params.from } : {}),
       ...(params.to ? { to: params.to } : {}),
       ...(typeof params.search === "string" ? { search: params.search } : {})
     });
+    
 
     return {
-      data: rows.map((log) => this.mapLog(log as ActivityLogWithUser)),
+      data: rows.map((log) => this.mapLog(log)),
       meta: this.buildMeta(params.page, params.pageSize, count, params.sort)
     };
   }

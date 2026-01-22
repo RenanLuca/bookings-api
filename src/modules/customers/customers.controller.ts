@@ -108,12 +108,9 @@ class CustomersController {
   }
 
   async getMe(req: Request, res: Response, next: NextFunction) {
-    const authUser = req.user;
-    if (!authUser) {
-      return next(new AuthTokenInvalidError());
-    }
+    const userId = req.user!.userId;
     try {
-      const profile = await service.getProfile(authUser.userId);
+      const profile = await service.getProfile(userId);
       return res.status(200).json(
         ResponseHelper.success(profile, customersMessages.get.success)
       );
@@ -123,10 +120,7 @@ class CustomersController {
   }
 
   async updateMe(req: Request, res: Response, next: NextFunction) {
-    const authUser = req.user;
-    if (!authUser) {
-      return next(new AuthTokenInvalidError());
-    }
+    const userId = req.user!.userId;
     const data = matchedData(req, { locations: ["body"] }) as UpdateProfileInput;
 
     try {
@@ -145,7 +139,7 @@ class CustomersController {
       if (Object.keys(customerPayload).length) {
         payload.customer = customerPayload;
       }
-      const result = await service.updateProfile(authUser.userId, payload);
+      const result = await service.updateProfile(userId, payload);
       return res.status(200).json(
         ResponseHelper.success(result.profile, customersMessages.update.success)
       );
@@ -155,17 +149,14 @@ class CustomersController {
   }
 
   async updatePermissions(req: Request, res: Response, next: NextFunction) {
-    const authUser = req.user;
-    if (!authUser) {
-      return next(new AuthTokenInvalidError());
-    }
+    const userId = req.user!.userId;
     const customerId = Number(req.params.id);
     const modules: ModulePermissionUpdate[] = req.body.modules;
     try {
       const permissions = await permissionsService.updatePermissions(
         customerId,
         modules,
-        authUser.userId
+        userId
       );
       return res.status(200).json(
         ResponseHelper.success({ permissions }, customersMessages.permissions.success)
@@ -176,10 +167,6 @@ class CustomersController {
   }
 
   async updateCustomerStatus(req: Request, res: Response, next: NextFunction) {
-    const authUser = req.user;
-    if (!authUser) {
-      return next(new AuthTokenInvalidError());
-    }
     const customerId = Number(req.params.id);
     const status: UserStatus = req.body.status;
     try {

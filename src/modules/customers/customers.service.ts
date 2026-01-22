@@ -131,14 +131,6 @@ class CustomersService {
     if (!profile) {
       throw new UserNotFoundError();
     }
-    if (!profile.Customer) {
-      const defaults = this.buildDefaultCustomerData();
-      await this.repository.createCustomer(userId, defaults);
-      profile = await this.repository.findProfile(userId);
-      if (!profile) {
-        throw new UserNotFoundError();
-      }
-    }
     return this.mapProfile(profile);
   }
 
