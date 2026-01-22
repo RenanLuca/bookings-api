@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from "vitest";
 import request from "supertest";
 import bcrypt from "bcryptjs";
-import { app } from "../../src/app.js";
+import app from "../../src/app.js";
 import { User, Room, AuthToken } from "../../src/models/index.js";
 
 describe("Rooms Endpoints", () => {

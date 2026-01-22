@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import request from "supertest";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { app } from "../../src/app.js";
+import app from "../../src/app.js";
 import { User, AuthToken, Customer, CustomerModulePermission } from "../../src/models/index.js";
 
 describe("JWT Expiration", () => {

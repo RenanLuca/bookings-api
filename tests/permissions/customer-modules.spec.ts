@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 import bcrypt from "bcryptjs";
-import { app } from "../../src/app.js";
+import app from "../../src/app.js";
 import {
   User,
   Customer,

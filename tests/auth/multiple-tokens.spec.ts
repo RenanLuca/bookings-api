@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from "vitest";
 import request from "supertest";
 import bcrypt from "bcryptjs";
-import { app } from "../../src/app.js";
+import app from "../../src/app.js";
 import { User, AuthToken, Customer, CustomerModulePermission } from "../../src/models/index.js";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
