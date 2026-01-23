@@ -66,30 +66,46 @@ class AppointmentsRepository implements IAppointmentsRepository {
   }
 
   private buildInclude(params: ListParams) {
-    if (params.search) {
+    const customerInclude = {
+      model: Customer,
+      include: [{ model: User, attributes: ["name", "email"] }]
+    };
+
+    if (!params.search) {
       return [
         { model: Room },
-        {
-          model: Customer,
-          required: true,
-          include: [
-            {
-              model: User,
-              attributes: ["name", "email"],
-              where: {
-                name: { [Op.like]: `%${params.search}%` }
-              },
-              required: true
-            }
-          ]
-        }
+        customerInclude
       ];
     }
+
+    if (params.customerId) {
+      return [
+        {
+          model: Room,
+          required: true,
+          where: {
+            name: { [Op.like]: `%${params.search}%` }
+          }
+        },
+        customerInclude
+      ];
+    }
+
     return [
       { model: Room },
       {
         model: Customer,
-        include: [{ model: User, attributes: ["name", "email"] }]
+        required: true,
+        include: [
+          {
+            model: User,
+            attributes: ["name", "email"],
+            where: {
+              name: { [Op.like]: `%${params.search}%` }
+            },
+            required: true
+          }
+        ]
       }
     ];
   }

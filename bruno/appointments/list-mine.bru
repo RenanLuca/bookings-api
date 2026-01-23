@@ -4,7 +4,7 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/appointments/me?page=1&pageSize=10&sort=desc&from=&to=
+  url: {{baseUrl}}/appointments/me?page=1&pageSize=10&sort=desc&from=&to=&search=
   auth: bearer
 }
 
@@ -14,11 +14,11 @@ auth:bearer {
 
 docs {
   # Listar Meus Agendamentos
-  Lista os agendamentos do cliente autenticado com filtros opcionais de data e ordenação. Requer token de cliente.
+  Lista os agendamentos do cliente autenticado com filtros opcionais de data, ordenação e busca por nome da sala. Requer token de cliente.
 
   ## Exemplo de requisição
   ```
-  GET {{baseUrl}}/appointments/me?page=1&pageSize=10&sort=desc&from=2026-01-15&to=2026-01-31
+  GET {{baseUrl}}/appointments/me?page=1&pageSize=10&sort=desc&from=2026-01-15&to=2026-01-31&search=Sala
   Header: Authorization: Bearer {{token}}
   ```
 

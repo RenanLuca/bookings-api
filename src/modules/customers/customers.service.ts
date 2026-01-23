@@ -59,7 +59,7 @@ class CustomersService {
     };
   }
 
-  private mapProfile(profile: UserWithCustomer): ProfileResult {
+  private mapProfile(profile: UserWithCustomer, permissions?: ProfileResult["permissions"]): ProfileResult {
     const customer = profile.Customer ?? null;
     const user: ProfileUser = {
       id: profile.id,
@@ -68,7 +68,7 @@ class CustomersService {
       role: profile.role,
       status: profile.status
     };
-    return { user, customer };
+    return permissions ? { user, customer, permissions } : { user, customer };
   }
 
   private async buildUserUpdates(
@@ -270,7 +270,16 @@ class CustomersService {
   async listCustomers(input: ListCustomersInput): Promise<ListCustomersResult> {
     const params = this.prepareListParams(input);
     const { rows, count } = await this.repository.findPaginated(params);
-    const data = rows.map((row) => this.mapProfile(row));
+    const data = await Promise.all(
+      rows.map(async (row) => {
+        const customerId = row.Customer?.id;
+        if (!customerId) {
+          return this.mapProfile(row);
+        }
+        const permissions = await this.permissionsService.getPermissionsByCustomerId(customerId);
+        return this.mapProfile(row, permissions);
+      })
+    );
     const meta: ListCustomersMeta = {
       page: params.page,
       pageSize: params.pageSize,
