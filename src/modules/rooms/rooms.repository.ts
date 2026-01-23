@@ -13,11 +13,14 @@ class RoomsRepository implements IRoomsRepository {
     if (params.name) {
       where.name = { [Op.substring]: params.name };
     }
-    const offset = (params.page - 1) * params.pageSize;
-    const orderDirection = params.sort === "asc" ? "ASC" : "DESC";
+    const page = params.page ?? 1;
+    const pageSize = params.pageSize ?? 10;
+    const sort = params.sort ?? "desc";
+    const offset = (page - 1) * pageSize;
+    const orderDirection = sort === "asc" ? "ASC" : "DESC";
     const { rows, count } = await Room.findAndCountAll({
       where,
-      limit: params.pageSize,
+      limit: pageSize,
       offset,
       order: [["createdAt", orderDirection]]
     });

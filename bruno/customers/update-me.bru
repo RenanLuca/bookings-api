@@ -36,6 +36,23 @@ docs {
   # Atualizar Perfil de Cliente
   Atualiza dados do usuário autenticado e seu endereço de cliente. Apenas para role CUSTOMER.
 
+  ## Parâmetros
+  Todos os campos são opcionais. Apenas os campos enviados serão atualizados.
+  
+  ### user (objeto opcional)
+  - `name` (string, opcional): Nome do usuário (mínimo 1 caractere)
+  - `email` (string, opcional): E-mail do usuário (formato válido)
+  - `password` (string, opcional): Nova senha (mínimo 6 caracteres)
+  
+  ### customer (objeto opcional)
+  - `zipCode` (string, opcional): CEP do endereço
+  - `street` (string, opcional): Rua do endereço
+  - `number` (string, opcional): Número do endereço
+  - `complement` (string, opcional): Complemento do endereço (pode ser null)
+  - `neighborhood` (string, opcional): Bairro do endereço
+  - `city` (string, opcional): Cidade do endereço
+  - `state` (string, opcional): Estado (UF) - **deve ter exatamente 2 caracteres** (ex: "SP", "RJ", "MG")
+
   ## Exemplo de requisição
   ```json
   {

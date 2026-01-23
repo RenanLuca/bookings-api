@@ -1,4 +1,4 @@
-import { BaseError } from "../../../shared/errors/base-error.js";
+import { BaseError } from "./base-error.js";
 
 export class AuthTokenInvalidError extends BaseError {
   readonly statusCode = 401;

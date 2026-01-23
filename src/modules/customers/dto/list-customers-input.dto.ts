@@ -1,8 +1,10 @@
 import type { SortDirection } from "./sort-direction.dto.js";
 
-export type FindPaginatedParams = {
+export type ListCustomersInput = {
   page?: number;
   pageSize?: number;
-  name?: string;
   sort?: SortDirection;
+  name?: string;
+  from?: string;
+  to?: string;
 };

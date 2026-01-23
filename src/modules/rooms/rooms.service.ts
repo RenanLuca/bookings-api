@@ -1,6 +1,7 @@
 import { ValidationError } from "../../shared/errors/index.js";
 import { RoomNotFoundError } from "./errors/index.js";
 import { roomsMessages } from "./constants/index.js";
+import { activityTypes } from "../../shared/constants/log-messages.js";
 import type { Room } from "../../models/room.model.js";
 import type { ILogsService } from "../logs/logs.service.interface.js";
 import type { IRoomsRepository } from "./rooms.repository.interface.js";
@@ -14,11 +15,14 @@ import type {
   UpdateRoomParams
 } from "./dto/index.js";
 
+const SECONDS_PER_HOUR = 3600;
+const SECONDS_PER_MINUTE = 60;
+
 class RoomsService {
   constructor(
     private readonly repository: IRoomsRepository,
     private readonly activityLogs: ILogsService
-  ) {}
+  ) { }
 
   private async logActivity(userId: number, activityType: string, description: string) {
     await this.activityLogs.createLog({
@@ -58,7 +62,7 @@ class RoomsService {
     const normalizedMinutes = minutes.toString().padStart(2, "0");
     const normalizedSeconds = seconds.toString().padStart(2, "0");
     const normalized = `${normalizedHours}:${normalizedMinutes}:${normalizedSeconds}`;
-    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+    const totalSeconds = hours * SECONDS_PER_HOUR + minutes * SECONDS_PER_MINUTE + seconds;
     return { normalized, totalSeconds };
   }
 
@@ -78,11 +82,16 @@ class RoomsService {
 
   async listRooms(params: FindPaginatedParams): Promise<ListRoomsResult> {
     const { rows, count } = await this.repository.findPaginated(params);
+
+    const page = params.page ?? 1;
+    const pageSize = params.pageSize ?? 10;
+    const sort = params.sort ?? "desc";
+
     const meta: ListRoomsMeta = {
-      page: params.page,
-      pageSize: params.pageSize,
+      page,
+      pageSize,
       total: count,
-      sort: params.sort
+      sort
     };
     return { data: rows, meta };
   }
@@ -109,7 +118,7 @@ class RoomsService {
     const logDescription = `Criou sala '${room.name}' (${this.formatTime(
       room.startTime
     )}-${this.formatTime(room.endTime)}, slot ${room.slotDurationMinutes}m)`;
-    await this.logActivity(actorId, "Criação de sala", logDescription);
+    await this.logActivity(actorId, activityTypes.ROOM_CREATE, logDescription);
     return { room, message: roomsMessages.create.success };
   }
 
@@ -190,7 +199,7 @@ class RoomsService {
 
     if (changes.length > 0) {
       const logDescription = `Atualizou sala '${updated.name}': ${changes.join("; ")}`;
-      await this.logActivity(actorId, "Atualização de sala", logDescription);
+      await this.logActivity(actorId, activityTypes.ROOM_UPDATE, logDescription);
     }
 
     return { room: updated, message: roomsMessages.update.success };
@@ -206,7 +215,7 @@ class RoomsService {
       throw new RoomNotFoundError();
     }
     const logDescription = `Removeu sala '${room.name}'`;
-    await this.logActivity(actorId, "Remoção de sala", logDescription);
+    await this.logActivity(actorId, activityTypes.ROOM_DELETE, logDescription);
     return { message: roomsMessages.delete.success };
   }
 }

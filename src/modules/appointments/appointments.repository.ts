@@ -35,11 +35,7 @@ class AppointmentsRepository implements IAppointmentsRepository {
   }
 
   async create(data: CreateAppointmentParams) {
-    try {
-      return await Appointment.create({ ...data, status: "PENDING" });
-    } catch (error) {
-      throw error;
-    }
+    return Appointment.create({ ...data, status: "PENDING" });
   }
 
   async findByIdWithRelations(id: number) {

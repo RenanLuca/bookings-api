@@ -12,7 +12,6 @@ import { AppointmentsController } from "./appointments.controller.js";
 
 const router = Router();
 const controller = new AppointmentsController();
-
 router.use(authMiddleware);
 
 router.post(

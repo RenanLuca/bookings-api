@@ -159,7 +159,7 @@ describe("Customers Endpoints", () => {
           },
           customer: {
             city: "New City",
-            state: "New State",
+            state: "SP",
             zipCode: "99999-999"
           }
         });
@@ -167,7 +167,7 @@ describe("Customers Endpoints", () => {
       expect(response.status).toBe(200);
       expect(response.body.data.user.name).toBe("Updated Name");
       expect(response.body.data.customer.city).toBe("New City");
-      expect(response.body.data.customer.state).toBe("New State");
+      expect(response.body.data.customer.state).toBe("SP");
       expect(response.body.data.customer.zipCode).toBe("99999-999");
     });
 

@@ -7,6 +7,10 @@ import {
   UserEmailAlreadyExistsError
 } from "./errors/index.js";
 import { customersMessages } from "./constants/index.js";
+import {
+  toUtcEndOfDayFromAppTz,
+  toUtcStartOfDayFromAppTz
+} from "../../shared/utils/datetime.js";
 import type { ActivityLogModule } from "../../models/activity-log.model.js";
 import type { UserStatus } from "../../models/user.model.js";
 import type { ILogsService } from "../logs/logs.service.interface.js";
@@ -23,7 +27,8 @@ import type {
   CustomerUpdateData,
   FindPaginatedParams,
   UserData,
-  UserWithCustomer
+  UserWithCustomer,
+  ListCustomersInput
 } from "./dto/index.js";
 
 class CustomersService {
@@ -103,7 +108,7 @@ class CustomersService {
     }
   }
 
-  private buildCustomerUpdates(input: UpdateProfileInput): CustomerUpdateData {
+  private buildCustomerUpdates(input: UpdateProfileInput, rawCustomer?: Record<string, unknown>): CustomerUpdateData {
     const updates: CustomerUpdateData = {};
     const payload = input.customer ?? {};
     const customerFields: (keyof CustomerUpdateData)[] = [
@@ -118,12 +123,42 @@ class CustomersService {
 
     this.copyIfPresent(payload, updates, customerFields);
 
+    if (
+      rawCustomer &&
+      Object.prototype.hasOwnProperty.call(rawCustomer, "complement") &&
+      rawCustomer.complement === null
+    ) {
+      updates.complement = null;
+    }
+
     return updates;
   }
 
   private async logEmailChange(userId: number, oldEmail: string, newEmail: string): Promise<void> {
     const logDescription = `Alterou email de '${oldEmail}' para '${newEmail}'`;
     await this.logActivity(userId, activityTypes.PROFILE_UPDATE, logDescription);
+  }
+
+  private prepareListParams(input: ListCustomersInput): FindPaginatedParams {
+    const params: FindPaginatedParams = {
+      page: input.page ?? 1,
+      pageSize: input.pageSize ?? 10,
+      sort: input.sort ?? "desc"
+    };
+
+    if (input.name) {
+      params.name = input.name;
+    }
+
+    if (input.from) {
+      params.from = toUtcStartOfDayFromAppTz(input.from);
+    }
+
+    if (input.to) {
+      params.to = toUtcEndOfDayFromAppTz(input.to);
+    }
+
+    return params;
   }
 
   async getProfile(userId: number) {
@@ -134,7 +169,7 @@ class CustomersService {
     return this.mapProfile(profile);
   }
 
-  async updateProfile(userId: number, input: UpdateProfileInput): Promise<{ profile: ProfileResult; message: string }> {
+  async updateProfile(userId: number, input: UpdateProfileInput, rawCustomer?: Record<string, unknown>): Promise<{ profile: ProfileResult; message: string }> {
     const transaction = await sequelize.transaction();
     let emailChanged = false;
     let oldEmail = "";
@@ -157,7 +192,7 @@ class CustomersService {
       oldEmail = userResult.oldEmail;
       newEmail = userResult.newEmail;
 
-      const customerUpdates = this.buildCustomerUpdates(input);
+      const customerUpdates = this.buildCustomerUpdates(input, rawCustomer);
 
       const hasUserUpdates = Object.keys(userResult.updates).length > 0;
       const hasCustomerUpdates = Object.keys(customerUpdates).length > 0;
@@ -232,7 +267,8 @@ class CustomersService {
     }
   }
 
-  async listCustomers(params: FindPaginatedParams): Promise<ListCustomersResult> {
+  async listCustomers(input: ListCustomersInput): Promise<ListCustomersResult> {
+    const params = this.prepareListParams(input);
     const { rows, count } = await this.repository.findPaginated(params);
     const data = rows.map((row) => this.mapProfile(row));
     const meta: ListCustomersMeta = {

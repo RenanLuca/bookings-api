@@ -11,6 +11,7 @@ import {
 import { appointmentsMessages } from "./constants/index.js";
 import type { UserRole } from "../../models/user.model.js";
 import { activityTypes } from "../../shared/constants/log-messages.js";
+import { ResponseHelper } from "../../shared/http/response.helper.js";
 import {
   toAppIsoStringFromUtc,
   toAppTzFromUtc,
@@ -24,6 +25,7 @@ import type { IPermissionsService } from "../permissions/permissions.service.int
 import type { IAppointmentsRepository } from "./appointments.repository.interface.js";
 import type {
   AppointmentCustomer,
+  AppointmentRoom,
   AppointmentResponse,
   CreateAppointmentInput,
   ListAppointmentsResult,
@@ -49,11 +51,11 @@ class AppointmentsService {
   }
 
   private toDate(value: string): Date {
-    return toUtcFromAppTz(value.trim());
+    return toUtcFromAppTz(value?.trim());
   }
 
   private getTimeSecondsFromRoomTime(value: string): number {
-    const trimmed = value.trim();
+    const trimmed = value?.trim();
     const segments = trimmed.split(":");
     const hours = Number.parseInt(segments[0] ?? "0", 10);
     const minutes = Number.parseInt(segments[1] ?? "0", 10);
@@ -88,45 +90,37 @@ class AppointmentsService {
   }
 
 
+  private buildRoomResponse(room?: { id: number; name: string } | null): AppointmentRoom | undefined {
+    if (!room?.id) return undefined;
+    return { id: room.id, name: room.name };
+  }
+
+  private buildCustomerResponse(
+    customer?: { id: number; User?: { name?: string; email?: string } | null } | null
+  ): AppointmentCustomer | undefined {
+    if (!customer?.id) return undefined;
+    const result: AppointmentCustomer = { id: customer.id };
+    if (customer.User?.name) result.name = customer.User.name;
+    if (customer.User?.email) result.email = customer.User.email;
+    return result;
+  }
+
   private toAppointmentResponse(record: AppointmentWithRelations): AppointmentResponse {
-    const scheduledAt = toUtcIsoString(record.scheduledAt);
-    const room =
-      record.Room && record.Room.id
-        ? { id: record.Room.id, name: record.Room.name }
-        : undefined;
-    let customer: AppointmentCustomer | undefined;
-    if (record.Customer && record.Customer.id) {
-      customer = { id: record.Customer.id };
-      if (record.Customer.User?.name) {
-        customer.name = record.Customer.User.name;
-      }
-      if (record.Customer.User?.email) {
-        customer.email = record.Customer.User.email;
-      }
-    }
-    const response: AppointmentResponse = {
+    const room = this.buildRoomResponse(record.Room);
+    const customer = this.buildCustomerResponse(record.Customer);
+    return {
       id: record.id,
       roomId: record.roomId,
       customerId: record.customerId,
       status: record.status,
-      scheduledAt
+      scheduledAt: toUtcIsoString(record.scheduledAt),
+      ...(room ? { room } : {}),
+      ...(customer ? { customer } : {})
     };
-    if (room) {
-      response.room = room;
-    }
-    if (customer) {
-      response.customer = customer;
-    }
-    return response;
   }
 
   private buildMeta(params: QueryFilters, total: number) {
-    return {
-      page: params.page,
-      pageSize: params.pageSize,
-      total,
-      sort: params.sort
-    };
+    return ResponseHelper.buildMeta(params.page, params.pageSize, total, params.sort);
   }
 
   private buildLogDescription(prefix: string, record: AppointmentWithRelations) {
@@ -144,9 +138,9 @@ class AppointmentsService {
     const to = input.to ? toUtcEndOfDayFromAppTz(input.to.trim()) : undefined;
 
     return {
-      page: input.page,
-      pageSize: input.pageSize,
-      sort: input.sort,
+      page: input.page ?? 1,
+      pageSize: input.pageSize ?? 10,
+      sort: input.sort ?? "desc",
       ...(from ? { from } : {}),
       ...(to ? { to } : {}),
       ...(customerId ? { customerId } : {}),

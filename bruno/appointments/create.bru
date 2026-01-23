@@ -17,17 +17,21 @@ auth:bearer {
 body:json {
   {
     "roomId": 1,
-    "scheduledAt": "2026-01-25T17:00:00-03:00"
+    "scheduledAt": "2026-01-25T15:00:00-03:00"
   }
 }
 
 vars:pre-request {
-  baseUrl: http:localhost:3000
+  baseUrl: http:localhost:3001
 }
 
 docs {
   # Criar Agendamento
   Cria um agendamento para uma sala em um horário disponível. Requer token de cliente.
+  
+  ## Parâmetros
+  - `roomId` (number, obrigatório): ID da sala onde o agendamento será criado
+  - `scheduledAt` (string, obrigatório): Data e hora do agendamento no formato ISO 8601 com timezone (ex: "2026-01-15T10:00:00-03:00")
   
   ## Exemplo de requisição
   ```json
@@ -63,7 +67,7 @@ docs {
   
   ## Status codes
   - 201 Criado
-  - 400 Erro de validação
+  - 400 Erro de validação (formato de data inválido, sala não encontrada, etc.)
   - 401 Token inválido ou ausente
   - 403 Acesso negado
   - 404 Sala ou cliente não encontrado

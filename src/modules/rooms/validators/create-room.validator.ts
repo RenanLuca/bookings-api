@@ -22,4 +22,5 @@ export const createRoomValidator = [
     .withMessage("Duração do slot é obrigatória")
     .isInt({ min: 1 })
     .withMessage("Duração do slot deve ser um número inteiro positivo")
+    .toInt()
 ];

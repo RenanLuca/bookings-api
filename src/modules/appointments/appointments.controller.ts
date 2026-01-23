@@ -1,24 +1,22 @@
 import type { NextFunction, Request, Response } from "express";
 import { matchedData } from "express-validator";
-import { AuthTokenInvalidError } from "../auth/errors/index.js";
 import { AppointmentsFactory } from "./appointments.factory.js";
 import { ResponseHelper } from "../../shared/http/response.helper.js";
 import { appointmentsMessages } from "./constants/index.js";
-import type { CreateAppointmentInput } from "./dto/index.js";
+import type { CreateAppointmentInput, ListFiltersInput } from "./dto/index.js";
+import { getAuthUser } from "../../shared/http/auth.helper.js";
+import type { IdParam } from "../../shared/http/route-params.dto.js";
 
 const service = AppointmentsFactory.createService();
 
 class AppointmentsController {
   async create(req: Request, res: Response, next: NextFunction) {
-    const userId = req.user!.userId;
-    const payload: CreateAppointmentInput = {
-      roomId: req.body.roomId,
-      scheduledAt: req.body.scheduledAt
-    };
+    const { userId } = getAuthUser(req);
+    const data = matchedData(req, { locations: ["body"] }) as CreateAppointmentInput;
     try {
       const result = await service.createAppointment(
         userId,
-        payload
+        data
       );
       return res.status(201).json(
         ResponseHelper.success(result.appointment, appointmentsMessages.create.success)
@@ -29,38 +27,17 @@ class AppointmentsController {
   }
 
   async listMine(req: Request, res: Response, next: NextFunction) {
-    const userId = req.user!.userId;
-    const page = req.query.page ? Number(req.query.page) : 1;
-    const pageSize = req.query.pageSize ? Number(req.query.pageSize) : 10;
-    const sortParam = typeof req.query.sort === "string" ? req.query.sort : "";
-    const sort: "asc" | "desc" = sortParam === "asc" ? "asc" : "desc";
-    const queryData = matchedData(req, { locations: ["query"] }) as {
-      from?: string;
-      to?: string;
-      search?: string;
-    };
+    const { userId } = getAuthUser(req);
+    const filters = matchedData(req, { locations: ["query"] }) as ListFiltersInput;
     try {
-      const filters = {
-        page,
-        pageSize,
-        sort,
-        ...(queryData.from ? { from: queryData.from } : {}),
-        ...(queryData.to ? { to: queryData.to } : {}),
-        ...(queryData.search ? { search: queryData.search } : {})
-      };
       const result = await service.listMyAppointments(
         userId,
         filters
       );
       return res.status(200).json(
-        ResponseHelper.successWithPagination(
+        ResponseHelper.buildPaginatedResponse(
           result.data,
-          {
-            page: result.meta.page,
-            limit: result.meta.pageSize,
-            total: result.meta.total,
-            totalPages: Math.ceil(result.meta.total / result.meta.pageSize)
-          },
+          result.meta,
           appointmentsMessages.list.success
         )
       );
@@ -70,34 +47,13 @@ class AppointmentsController {
   }
 
   async listAll(req: Request, res: Response, next: NextFunction) {
-    const page = req.query.page ? Number(req.query.page) : 1;
-    const pageSize = req.query.pageSize ? Number(req.query.pageSize) : 10;
-    const sortParam = typeof req.query.sort === "string" ? req.query.sort : "";
-    const sort: "asc" | "desc" = sortParam === "asc" ? "asc" : "desc";
-    const queryData = matchedData(req, { locations: ["query"] }) as {
-      from?: string;
-      to?: string;
-      search?: string;
-    };
+    const filters = matchedData(req, { locations: ["query"] }) as ListFiltersInput;
     try {
-      const filters = {
-        page,
-        pageSize,
-        sort,
-        ...(queryData.from ? { from: queryData.from } : {}),
-        ...(queryData.to ? { to: queryData.to } : {}),
-        ...(queryData.search ? { search: queryData.search } : {})
-      };
       const result = await service.listAll(filters);
       return res.status(200).json(
-        ResponseHelper.successWithPagination(
+        ResponseHelper.buildPaginatedResponse(
           result.data,
-          {
-            page: result.meta.page,
-            limit: result.meta.pageSize,
-            total: result.meta.total,
-            totalPages: Math.ceil(result.meta.total / result.meta.pageSize)
-          },
+          result.meta,
           appointmentsMessages.list.success
         )
       );
@@ -107,10 +63,10 @@ class AppointmentsController {
   }
 
   async accept(req: Request, res: Response, next: NextFunction) {
-    const userId = req.user!.userId;
-    const id = Number(req.params.id);
+    const { userId } = getAuthUser(req);
+    const { id } = matchedData(req, { locations: ["params"] }) as IdParam;
     try {
-      const result = await service.acceptAppointment(id, userId);
+      const result = await service.acceptAppointment(id, userId)
       return res.status(200).json(
         ResponseHelper.success(result.appointment, appointmentsMessages.accept.success)
       );
@@ -120,8 +76,8 @@ class AppointmentsController {
   }
 
   async cancel(req: Request, res: Response, next: NextFunction) {
-    const authUser = req.user!;
-    const id = Number(req.params.id);
+    const authUser = getAuthUser(req);
+    const { id } = matchedData(req, { locations: ["params"] }) as IdParam;
     try {
       const result = await service.cancelAppointment(id, authUser.userId, authUser.role);
       return res.status(200).json(

@@ -1,10 +1,14 @@
-
-import type { CreateLogInput, ListLogsInput, ListLogsResult, LogResponse, ListAllLogsInput, ListLogsMeta, ActivityLogWithUser } from "./dto/index.js";
+import type { CreateLogInput, ListLogsInput, ListLogsResult, LogResponse, ListAllLogsInput, ActivityLogWithUser } from "./dto/index.js";
 import type { ILogsRepository } from "./logs.repository.interface.js";
+import { ResponseHelper } from "../../shared/http/response.helper.js";
+import {
+  toUtcEndOfDayFromAppTz,
+  toUtcStartOfDayFromAppTz
+} from "../../shared/utils/datetime.js";
 
 
 class LogsService {
-  constructor(private readonly repository: ILogsRepository) {}
+  constructor(private readonly repository: ILogsRepository) { }
 
   private mapLog(log: ActivityLogWithUser): LogResponse {
     return {
@@ -15,19 +19,14 @@ class LogsService {
       createdAt: log.createdAt.toISOString(),
       ...(log.User
         ? {
-            user: {
-              id: log.User.id,
-              name: log.User.name,
-              role: log.User.role
-            }
+          user: {
+            id: log.User.id,
+            name: log.User.name,
+            role: log.User.role
           }
+        }
         : {})
     };
-  }
-  
-
-  private buildMeta(page: number, pageSize: number, total: number, sort: "asc" | "desc"): ListLogsMeta {
-    return { page, pageSize, total, sort };
   }
 
   async createLog(data: CreateLogInput) {
@@ -35,40 +34,50 @@ class LogsService {
   }
 
   async listByUserId(userId: number, params: ListLogsInput): Promise<ListLogsResult> {
+    const page = params.page ?? 1;
+    const pageSize = params.pageSize ?? 10;
+    const sort = params.sort ?? "desc";
+    const from = params.from ? toUtcStartOfDayFromAppTz(params.from) : undefined;
+    const to = params.to ? toUtcEndOfDayFromAppTz(params.to) : undefined;
+
     const { rows, count } = await this.repository.listByUserId({
       userId,
-      page: params.page,
-      pageSize: params.pageSize,
-      sort: params.sort,
-      ...(params.from ? { from: params.from } : {}),
-      ...(params.to ? { to: params.to } : {}),
-      ...(typeof params.search === "string" ? { search: params.search } : {})
+      page,
+      pageSize,
+      sort,
+      ...(from ? { from } : {}),
+      ...(to ? { to } : {}),
+      ...(params.search ? { search: params.search } : {})
     });
 
     return {
       data: rows.map((log) => this.mapLog(log)),
-      meta: this.buildMeta(params.page, params.pageSize, count, params.sort)
+      meta: ResponseHelper.buildMeta(page, pageSize, count, sort)
     };
   }
 
   async listAllLogs(params: ListAllLogsInput): Promise<ListLogsResult> {
-    const offset = (params.page - 1) * params.pageSize;
+    const page = params.page ?? 1;
+    const pageSize = params.pageSize ?? 10;
+    const sort = params.sort ?? "desc";
+    const from = params.from ? toUtcStartOfDayFromAppTz(params.from) : undefined;
+    const to = params.to ? toUtcEndOfDayFromAppTz(params.to) : undefined;
 
     const { rows, count } = await this.repository.findAllWithFilters({
-      limit: params.pageSize,
-      offset,
-      order: params.sort,
+      page,
+      pageSize,
+      sort,
       ...(params.module ? { module: params.module } : {}),
-      ...(typeof params.userId === "number" ? { userId: params.userId } : {}),
-      ...(params.from ? { from: params.from } : {}),
-      ...(params.to ? { to: params.to } : {}),
-      ...(typeof params.search === "string" ? { search: params.search } : {})
+      ...(params.userId ? { userId: params.userId } : {}),
+      ...(from ? { from } : {}),
+      ...(to ? { to } : {}),
+      ...(params.search ? { search: params.search } : {})
     });
-    
+
 
     return {
       data: rows.map((log) => this.mapLog(log)),
-      meta: this.buildMeta(params.page, params.pageSize, count, params.sort)
+      meta: ResponseHelper.buildMeta(page, pageSize, count, sort)
     };
   }
 }

@@ -13,9 +13,9 @@ export type ListByUserIdParams = {
 export type FindAllWithFiltersParams = {
   module?: ActivityLogModule;
   userId?: number;
-  limit: number;
-  offset: number;
-  order: "asc" | "desc";
+  page: number;
+  pageSize: number;
+  sort: "asc" | "desc";
   from?: Date;
   to?: Date;
   search?: string;

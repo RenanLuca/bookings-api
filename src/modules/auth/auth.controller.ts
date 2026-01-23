@@ -1,14 +1,16 @@
 import type { NextFunction, Request, Response } from "express";
-import { AuthTokenInvalidError } from "./errors/index.js";
+import { matchedData } from "express-validator";
 import { AuthFactory } from "./auth.factory.js";
 import { ResponseHelper } from "../../shared/http/response.helper.js";
 import { authMessages } from "./constants/index.js";
+import type { CheckEmailInput, LoginInput } from "./dto/index.js";
+import { getAuthUser } from "../../shared/http/auth.helper.js";
 
 const service = AuthFactory.createService();
 
 class AuthController {
   async checkEmail(req: Request, res: Response, next: NextFunction) {
-    const email = req.body.email as string;
+    const { email } = matchedData(req, { locations: ["body"] }) as CheckEmailInput;
     try {
       const result = await service.checkEmail(email);
       return res.status(200).json(
@@ -23,12 +25,9 @@ class AuthController {
   }
 
   async login(req: Request, res: Response, next: NextFunction) {
-    const email = req.body.email as string;
-    const password = req.body.password as string;
-    const isAdmin = req.body.isAdmin as boolean;
-    const role = isAdmin ? "ADMIN" : "CUSTOMER";
+    const data = matchedData(req, { locations: ["body"] }) as LoginInput;
     try {
-      const result = await service.login(email, password, role);
+      const result = await service.login(data.email, data.password, data.isAdmin);
       return res.status(200).json(
         ResponseHelper.success(
           { token: result.token, user: result.user },
@@ -41,12 +40,9 @@ class AuthController {
   }
 
   async logout(req: Request, res: Response, next: NextFunction) {
-    const user = req.user;
-    if (!user || !user.token) {
-      return next(new AuthTokenInvalidError());
-    }
+    const { userId, token } = getAuthUser(req);
     try {
-      await service.logout(user.userId, user.token);
+      await service.logout(userId, token);
       return res.status(200).json(
         ResponseHelper.successMessage(authMessages.logout.success)
       );

@@ -36,10 +36,7 @@ class LogsRepository implements ILogsRepository {
   }
 
   private buildSearchWhere(search?: string): Record<string, unknown> {
-    if (!search) {
-      return {};
-    }
-    const trimmed = search.trim();
+    const trimmed = search?.trim();
     if (!trimmed) {
       return {};
     }
@@ -97,7 +94,8 @@ class LogsRepository implements ILogsRepository {
   }
 
   async findAllWithFilters(params: FindAllWithFiltersParams) {
-    const direction = params.order === "asc" ? "ASC" : "DESC";
+    const offset = (params.page - 1) * params.pageSize;
+    const direction = params.sort === "asc" ? "ASC" : "DESC";
     const order: OrderItem[] = [["createdAt", direction], ["id", direction]];
     const where: Record<string, unknown> = {
       ...this.buildDateRangeWhere(params.from, params.to),
@@ -114,8 +112,8 @@ class LogsRepository implements ILogsRepository {
 
     const options: FindAndCountOptions = {
       where,
-      limit: params.limit,
-      offset: params.offset,
+      limit: params.pageSize,
+      offset,
       order,
       include: [{ model: User, attributes: ["id", "name", "role"] }],
       distinct: true

@@ -12,3 +12,4 @@ export * from "./user-data.dto.js";
 export * from "./sort-direction.dto.js";
 export * from "./find-paginated-params.dto.js";
 export * from "./create-user-with-customer-params.dto.js";
+export * from "./list-customers-input.dto.js";

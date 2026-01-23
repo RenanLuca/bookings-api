@@ -1,34 +1,23 @@
 import type { NextFunction, Request, Response } from "express";
 import { matchedData } from "express-validator";
-import { AuthTokenInvalidError } from "../auth/errors/index.js";
 import { CustomersFactory } from "./customers.factory.js";
 import { PermissionsFactory } from "../permissions/permissions.factory.js";
 import { customersMessages } from "./constants/index.js";
 import { ResponseHelper } from "../../shared/http/response.helper.js";
-import {
-  toUtcEndOfDayFromAppTz,
-  toUtcStartOfDayFromAppTz
-} from "../../shared/utils/datetime.js";
 import type { UserStatus } from "../../models/user.model.js";
-import type { RegisterInput, UpdateProfileInput, CustomerData } from "./dto/index.js";
+import type { RegisterInput, UpdateProfileInput, ListCustomersInput } from "./dto/index.js";
 import type { ModulePermissionUpdate } from "../permissions/permissions.service.interface.js";
+import { getAuthUser } from "../../shared/http/auth.helper.js";
+import type { IdParam } from "../../shared/http/route-params.dto.js";
 
 const service = CustomersFactory.createService();
 const permissionsService = PermissionsFactory.createService();
 
 class CustomersController {
   async register(req: Request, res: Response, next: NextFunction) {
-    const { name, email, password, customer } = req.body;
+    const data = matchedData(req, { locations: ["body"] }) as RegisterInput;
     try {
-      const input: RegisterInput = {
-        name,
-        email,
-        password
-      };
-      if (customer && typeof customer === "object") {
-        input.customer = customer;
-      }
-      const result = await service.register(input);
+      const result = await service.register(data);
       return res.status(201).json(
         ResponseHelper.success(result.profile, customersMessages.register.success)
       );
@@ -38,43 +27,13 @@ class CustomersController {
   }
 
   async list(req: Request, res: Response, next: NextFunction) {
-    const page = req.query.page ? Number(req.query.page) : 1;
-    const pageSize = req.query.pageSize ? Number(req.query.pageSize) : 10;
-    const sortParam = typeof req.query.sort === "string" ? req.query.sort : "";
-    const sort = sortParam === "asc" ? "asc" : "desc";
-    const queryData = matchedData(req, { locations: ["query"] }) as {
-      name?: string;
-      from?: string;
-      to?: string;
-    };
+    const input = matchedData(req, { locations: ["query"] }) as ListCustomersInput;
     try {
-      const params: {
-        page: number;
-        pageSize: number;
-        sort: "asc" | "desc";
-        name?: string;
-        from?: Date;
-        to?: Date;
-      } = { page, pageSize, sort };
-      if (queryData.name) {
-        params.name = queryData.name;
-      }
-      if (queryData.from) {
-        params.from = toUtcStartOfDayFromAppTz(queryData.from);
-      }
-      if (queryData.to) {
-        params.to = toUtcEndOfDayFromAppTz(queryData.to);
-      }
-      const result = await service.listCustomers(params);
+      const result = await service.listCustomers(input);
       return res.status(200).json(
-        ResponseHelper.successWithPagination(
+        ResponseHelper.buildPaginatedResponse(
           result.data,
-          {
-            page: result.meta.page,
-            limit: result.meta.pageSize,
-            total: result.meta.total,
-            totalPages: Math.ceil(result.meta.total / result.meta.pageSize)
-          },
+          result.meta,
           customersMessages.list.success
         )
       );
@@ -84,7 +43,7 @@ class CustomersController {
   }
 
   async getById(req: Request, res: Response, next: NextFunction) {
-    const id = Number(req.params.id);
+    const { id } = matchedData(req, { locations: ["params"] }) as IdParam;
     try {
       const profile = await service.getCustomerById(id);
       return res.status(200).json(
@@ -96,7 +55,7 @@ class CustomersController {
   }
 
   async remove(req: Request, res: Response, next: NextFunction) {
-    const id = Number(req.params.id);
+    const { id } = matchedData(req, { locations: ["params"] }) as IdParam;
     try {
       await service.softDeleteCustomer(id);
       return res.status(200).json(
@@ -108,7 +67,7 @@ class CustomersController {
   }
 
   async getMe(req: Request, res: Response, next: NextFunction) {
-    const userId = req.user!.userId;
+    const { userId } = getAuthUser(req);
     try {
       const profile = await service.getProfile(userId);
       return res.status(200).json(
@@ -120,26 +79,12 @@ class CustomersController {
   }
 
   async updateMe(req: Request, res: Response, next: NextFunction) {
-    const userId = req.user!.userId;
+    const { userId } = getAuthUser(req);
     const data = matchedData(req, { locations: ["body"] }) as UpdateProfileInput;
+    const rawCustomer = data.customer;
 
     try {
-      const payload: UpdateProfileInput = {};
-      if (data.user && Object.keys(data.user).length) {
-        payload.user = data.user;
-      }
-      const rawCustomer = req.body?.customer ?? {};
-      const customerPayload: Partial<CustomerData> = { ...(data.customer ?? {}) };
-      if (
-        Object.prototype.hasOwnProperty.call(rawCustomer, "complement") &&
-        rawCustomer.complement === null
-      ) {
-        customerPayload.complement = null;
-      }
-      if (Object.keys(customerPayload).length) {
-        payload.customer = customerPayload;
-      }
-      const result = await service.updateProfile(userId, payload);
+      const result = await service.updateProfile(userId, data, rawCustomer);
       return res.status(200).json(
         ResponseHelper.success(result.profile, customersMessages.update.success)
       );
@@ -149,9 +94,9 @@ class CustomersController {
   }
 
   async updatePermissions(req: Request, res: Response, next: NextFunction) {
-    const userId = req.user!.userId;
-    const customerId = Number(req.params.id);
-    const modules: ModulePermissionUpdate[] = req.body.modules;
+    const { userId } = getAuthUser(req);
+    const { id: customerId } = matchedData(req, { locations: ["params"] }) as IdParam;
+    const { modules } = matchedData(req, { locations: ["body"] }) as { modules: ModulePermissionUpdate[] };
     try {
       const permissions = await permissionsService.updatePermissions(
         customerId,
@@ -167,8 +112,8 @@ class CustomersController {
   }
 
   async updateCustomerStatus(req: Request, res: Response, next: NextFunction) {
-    const customerId = Number(req.params.id);
-    const status: UserStatus = req.body.status;
+    const { id: customerId } = matchedData(req, { locations: ["params"] }) as IdParam;
+    const { status } = matchedData(req, { locations: ["body"] }) as { status: UserStatus };
     try {
       const result = await service.updateCustomerStatus(customerId, status);
       return res.status(200).json(
@@ -180,7 +125,7 @@ class CustomersController {
   }
 
   async getMyPermissions(req: Request, res: Response, next: NextFunction) {
-    const userId = req.user!.userId;
+    const { userId } = getAuthUser(req);
     try {
       const result = await service.getMyPermissions(userId);
       return res.status(200).json(

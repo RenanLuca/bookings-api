@@ -47,7 +47,8 @@ class AuthService  {
     return { exists, canLogin, message };
   }
 
-  async login(email: string, password: string, expectedRole: UserRole): Promise<LoginResult> {
+  async login(email: string, password: string, isAdmin: boolean): Promise<LoginResult> {
+    const expectedRole: UserRole = isAdmin ? "ADMIN" : "CUSTOMER";
     const user = await this.repository.findUserByEmail(email);
     if (!user) {
       throw new AuthInvalidCredentialsError();

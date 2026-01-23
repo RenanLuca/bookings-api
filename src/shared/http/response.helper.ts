@@ -35,6 +35,13 @@ export interface PaginationMeta {
   totalPages: number;
 }
 
+export interface ServicePaginationMeta {
+  page: number;
+  pageSize: number;
+  total: number;
+  sort: "asc" | "desc";
+}
+
 export class ResponseHelper {
   static success<T>(data: T, message?: string, meta?: ResponseMeta): ApiSuccessResponse<T> {
     const response: ApiSuccessResponse<T> = {
@@ -98,5 +105,29 @@ export class ResponseHelper {
       errors,
       code: "VALIDATION_ERROR"
     };
+  }
+
+  static buildPaginatedResponse<T>(
+    data: T[],
+    meta: ServicePaginationMeta,
+    message?: string
+  ): ApiSuccessResponse<T[]> {
+    const paginationMeta: PaginationMeta = {
+      page: meta.page,
+      limit: meta.pageSize,
+      total: meta.total,
+      totalPages: Math.ceil(meta.total / meta.pageSize)
+    };
+
+    return this.successWithPagination(data, paginationMeta, message);
+  }
+
+  static buildMeta(
+    page: number,
+    pageSize: number,
+    total: number,
+    sort: "asc" | "desc"
+  ): ServicePaginationMeta {
+    return { page, pageSize, total, sort };
   }
 }

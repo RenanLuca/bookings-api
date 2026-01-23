@@ -14,4 +14,7 @@ export const activityTypes = {
   APPOINTMENT_CREATE: "Criação de agendamento",
   APPOINTMENT_ACCEPT: "Aceite de agendamento",
   APPOINTMENT_CANCEL: "Cancelamento de agendamento",
+  ROOM_CREATE: "Criação de sala",
+  ROOM_UPDATE: "Atualização de sala",
+  ROOM_DELETE: "Remoção de sala",
 } as const;

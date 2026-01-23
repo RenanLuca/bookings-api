@@ -12,10 +12,14 @@ post {
 
 body:json {
   {
-    "email": "admin@bookings3.com",
+    "email": "admin@bookings2.com",
     "password": "admin123",
     "isAdmin": true
   }
+}
+
+vars:pre-request {
+  baseUrl: http:localhost:3001
 }
 
 tests {
