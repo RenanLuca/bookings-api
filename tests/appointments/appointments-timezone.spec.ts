@@ -263,12 +263,18 @@ describe("Appointments Timezone Handling", () => {
     it("should filter from start of day in Sao Paulo timezone (03:00 UTC)", async () => {
       const response = await request(app)
         .get("/appointments")
-        .query({ from: "2026-01-24" })
+        .query({ from: "2026-01-24", pageSize: 100 })
         .set("Authorization", `Bearer ${adminToken}`);
 
       expect(response.status).toBe(200);
 
-      const scheduledDates = response.body.data.map((a: any) => a.scheduledAt);
+      const testAppointments = response.body.data.filter((a: any) =>
+        filterTestAppointmentIds.includes(a.id)
+      );
+
+      expect(testAppointments).toHaveLength(4);
+
+      const scheduledDates = testAppointments.map((a: any) => a.scheduledAt);
 
       expect(scheduledDates).not.toContain("2026-01-24T02:59:59.000Z");
       expect(scheduledDates).toContain("2026-01-24T03:00:00.000Z");
@@ -285,7 +291,11 @@ describe("Appointments Timezone Handling", () => {
 
       expect(response.status).toBe(200);
 
-      const scheduledDates = response.body.data.map((a: any) => a.scheduledAt);
+      const testAppointments = response.body.data.filter((a: any) =>
+        filterTestAppointmentIds.includes(a.id)
+      );
+
+      const scheduledDates = testAppointments.map((a: any) => a.scheduledAt);
 
       expect(scheduledDates).toContain("2026-01-24T02:59:59.000Z");
       expect(scheduledDates).toContain("2026-01-24T03:00:00.000Z");

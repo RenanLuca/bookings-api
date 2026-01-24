@@ -15,10 +15,11 @@ describe("Customers Endpoints", () => {
   const createdCustomerIds: number[] = [];
 
   const createAdmin = async (email: string) => {
+    const uniqueEmail = `${Date.now()}-${email}`;
     const passwordHash = bcrypt.hashSync(testPassword, 10);
     const user = await User.create({
       name: "Admin User",
-      email,
+      email: uniqueEmail,
       passwordHash,
       role: "ADMIN",
       status: "ACTIVE"
@@ -27,7 +28,7 @@ describe("Customers Endpoints", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email, password: testPassword, isAdmin: true });
+      .send({ email: uniqueEmail, password: testPassword, isAdmin: true });
 
     return { user, token: loginResponse.body.data.token as string };
   };
@@ -36,10 +37,11 @@ describe("Customers Endpoints", () => {
     email: string,
     name: string = "Test Customer"
   ) => {
+    const uniqueEmail = `${Date.now()}-${email}`;
     const passwordHash = bcrypt.hashSync(testPassword, 10);
     const user = await User.create({
       name,
-      email,
+      email: uniqueEmail,
       passwordHash,
       role: "CUSTOMER",
       status: "ACTIVE"
@@ -72,7 +74,7 @@ describe("Customers Endpoints", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email, password: testPassword, isAdmin: false });
+      .send({ email: uniqueEmail, password: testPassword, isAdmin: false });
 
     return { user, customer, token: loginResponse.body.data.token as string };
   };
@@ -190,7 +192,7 @@ describe("Customers Endpoints", () => {
 
   describe("PATCH /customers/me - Email conflict", () => {
     it("should return 409 when updating to an existing email", async () => {
-      await createCustomerWithUser("existing-email@test.com");
+      const existing = await createCustomerWithUser("existing-email@test.com");
       const customer = await createCustomerWithUser("my-email@test.com");
 
       const response = await request(app)
@@ -198,7 +200,7 @@ describe("Customers Endpoints", () => {
         .set("Authorization", `Bearer ${customer.token}`)
         .send({
           user: {
-            email: "existing-email@test.com"
+            email: existing.user.email
           }
         });
 

@@ -10,10 +10,11 @@ describe("Rooms Endpoints", () => {
   const createdRoomIds: number[] = [];
 
   const createAdmin = async (email: string) => {
+    const uniqueEmail = `${Date.now()}-${email}`;
     const passwordHash = bcrypt.hashSync(testPassword, 10);
     const user = await User.create({
       name: "Admin User",
-      email,
+      email: uniqueEmail,
       passwordHash,
       role: "ADMIN",
       status: "ACTIVE"
@@ -22,16 +23,17 @@ describe("Rooms Endpoints", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email, password: testPassword, isAdmin: true });
+      .send({ email: uniqueEmail, password: testPassword, isAdmin: true });
 
     return { user, token: loginResponse.body.data.token as string };
   };
 
   const createCustomer = async (email: string) => {
+    const uniqueEmail = `${Date.now()}-${email}`;
     const passwordHash = bcrypt.hashSync(testPassword, 10);
     const user = await User.create({
       name: "Customer User",
-      email,
+      email: uniqueEmail,
       passwordHash,
       role: "CUSTOMER",
       status: "ACTIVE"
@@ -40,7 +42,7 @@ describe("Rooms Endpoints", () => {
 
     const loginResponse = await request(app)
       .post("/auth/login")
-      .send({ email, password: testPassword, isAdmin: false });
+      .send({ email: uniqueEmail, password: testPassword, isAdmin: false });
 
     return { user, token: loginResponse.body.data.token as string };
   };

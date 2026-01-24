@@ -91,7 +91,7 @@ class CustomersRepository implements ICustomersRepository {
   async findPaginated(params: FindPaginatedParams) {
     const where: Record<string, unknown> = { role: "CUSTOMER" };
     if (params.name) {
-      where.name = { [Op.substring]: params.name };
+      where.name = { [Op.like]: `%${params.name}%` };
     }
     const customerWhere: Record<string, unknown> = {};
     if (params.from || params.to) {
