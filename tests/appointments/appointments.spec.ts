@@ -162,6 +162,39 @@ describe("Appointments Endpoints", () => {
       expect(secondResponse.status).toBe(409);
       expect(secondResponse.body).toHaveProperty("code", "APPOINTMENT_CONFLICT");
     });
+
+    it("should return 409 when creating appointment within slot duration of existing appointment", async () => {
+      const room = await createRoom("Room Slot Duration Test");
+      const customerA = await createCustomerWithPermission("customer-slot-a@test.com");
+      const customerB = await createCustomerWithPermission("customer-slot-b@test.com");
+
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const firstScheduledAt = `${tomorrow.toISOString().split('T')[0]}T10:00:00`;
+      const conflictScheduledAt = `${tomorrow.toISOString().split('T')[0]}T10:30:00`;
+
+      const firstResponse = await request(app)
+        .post("/appointments")
+        .set("Authorization", `Bearer ${customerA.token}`)
+        .send({
+          roomId: room.id,
+          scheduledAt: firstScheduledAt
+        });
+
+      expect(firstResponse.status).toBe(201);
+      createdAppointmentIds.push(firstResponse.body.data.id);
+
+      const secondResponse = await request(app)
+        .post("/appointments")
+        .set("Authorization", `Bearer ${customerB.token}`)
+        .send({
+          roomId: room.id,
+          scheduledAt: conflictScheduledAt
+        });
+
+      expect(secondResponse.status).toBe(409);
+      expect(secondResponse.body).toHaveProperty("code", "APPOINTMENT_CONFLICT");
+    });
   });
 
   describe("POST /appointments - Room hours validation", () => {

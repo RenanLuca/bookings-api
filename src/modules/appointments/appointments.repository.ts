@@ -23,15 +23,33 @@ class AppointmentsRepository implements IAppointmentsRepository {
   }
 
   async findConflict(roomId: number, scheduledAt: Date) {
-    const conflict = await Appointment.findOne({
+    const room = await Room.findByPk(roomId);
+    if (!room) {
+      return null;
+    }
+
+    const newAppointmentEnd = new Date(scheduledAt);
+    newAppointmentEnd.setMinutes(newAppointmentEnd.getMinutes() + room.slotDurationMinutes);
+
+    const existingAppointments = await Appointment.findAll({
       where: {
         roomId,
-        scheduledAt,
         status: { [Op.ne]: "CANCELED" }
       }
     });
 
-    return conflict;
+    for (const existing of existingAppointments) {
+      const existingEnd = new Date(existing.scheduledAt);
+      existingEnd.setMinutes(existingEnd.getMinutes() + room.slotDurationMinutes);
+
+      const hasOverlap = scheduledAt < existingEnd && newAppointmentEnd > existing.scheduledAt;
+
+      if (hasOverlap) {
+        return existing;
+      }
+    }
+
+    return null;
   }
 
   async create(data: CreateAppointmentParams) {
